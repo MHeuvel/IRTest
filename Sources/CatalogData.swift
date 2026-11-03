@@ -1,0 +1,4922 @@
+import Foundation
+
+// Formaat per regel: apparaattype | basistype | merk | codes (op volgorde van voorkeur)
+// Afkomstig uit Device-Type-Data.csv van UnityRemote 1.7.1. Houd deze repository private.
+enum CatalogData {
+    static let text = #"""
+1|9|Acoustic Solutions|1446,1501
+1|9|Adcom|577,1100
+1|9|Amstrad|78
+1|9|Anthem|2220
+1|9|Bose|674
+1|9|Cambridge Audio|1730,1982
+1|9|Carver|892
+1|9|Cary Audio Design|1879
+1|9|Classe|1461
+1|9|Curtis Mathes|300
+1|9|Denon|2134,272
+1|9|Durabrand|1561
+1|9|Flextronics|1879
+1|9|GE|78
+1|9|Genexxa|395
+1|9|Halcro|1934
+1|9|Harman/Kardon|892
+1|9|Hitachi|1561
+1|9|JVC|331
+1|9|Krell|1837,2463
+1|9|Left Coast|892
+1|9|Lenoxx|1561
+1|9|Lexicon|1802
+1|9|Logitech|1408
+1|9|Marantz|892,1892,2138
+1|9|Mark Levinson|2405
+1|9|McIntosh|251
+1|9|Modulaire|395
+1|9|Optimus|395,300,823
+1|9|Parasound|1934
+1|9|Philips|892
+1|9|Pioneer|300,823
+1|9|Polk Audio|892,2242
+1|9|Primare|1851
+1|9|RCA|300,823
+1|9|RadioShack|395
+1|9|Realistic|395
+1|9|Sony|689
+1|9|Soundesign|78
+1|9|Thule Audio|1851
+1|9|Victor|331
+1|9|Wards|78
+1|9|Yamaha|354
+1|9|upXus|1446
+2|2|A-Mark|144,8
+2|2|ABC|237,3,8
+2|2|ADB|2254,1230,1269
+2|2|AT&T|858
+2|2|Accuphase|3
+2|2|Acorn|237
+2|2|Action|237
+2|2|Active|237
+2|2|Akado|2043,2339
+2|2|Altibox|2030
+2|2|Americast|899
+2|2|Amino|1602,1822,1481,2482
+2|2|Amstrad|1222
+2|2|Archer|237
+2|2|Auna|1439,1230,1269
+2|2|Austar|276
+2|2|Azteca|2237
+2|2|BCC|276
+2|2|Belgacom TV|2345
+2|2|Bell South|899
+2|2|Bestlink|303
+2|2|Birmingham Cable Communications|276
+2|2|Bright House|1376,1877
+2|2|British Telecom|3
+2|2|Cable & Wireless|1068
+2|2|Cable One|1376,1877
+2|2|Cablecom|1582
+2|2|Cablevision|1376,1877,1006
+2|2|Century|8
+2|2|Charter|1376,1877,2187
+2|2|Chunghwa|1917
+2|2|Cisco|1877,877,1982,858,2345
+2|2|ClearMax|883
+2|2|Clearmaster|883
+2|2|ClubInternet|2132
+2|2|Com Hem|660,1666,2015,2447
+2|2|Comcast|1376,1877,1982,2576
+2|2|Cool Box|883
+2|2|Coolmax|883
+2|2|Coship|1462
+2|2|Cox|1376,1877
+2|2|Daehan|778
+2|2|Daeryung|1877,877,477,8
+2|2|Digeo|1187,2187
+2|2|Director|476
+2|2|Emerson|303
+2|2|Encon|8
+2|2|Fosgate|276
+2|2|Foxtel|1222
+2|2|France Telecom|817
+2|2|Freebox|1482,1976
+2|2|GE|237,144
+2|2|GMI|883
+2|2|GNI|1466
+2|2|Galaxi|8
+2|2|Gehua|476
+2|2|General Instrument|476,1439,810,276,3
+2|2|Gibralter|3
+2|2|GoldStar|144
+2|2|Gradiente|1136
+2|2|Hamlin|9,273
+2|2|Hathw@y|2043
+2|2|Hitachi|9,3,8
+2|2|Homecast|2301
+2|2|Hongtian Jiangsu|1462
+2|2|Humax|660,1981,1983,2043,2339,2447
+2|2|Hwalin|303
+2|2|Insight|1376,1877,476,810
+2|2|J:COM|1760,1782
+2|2|Jerrold|476,1439,810,276,3
+2|2|Jiuzhou|1445
+2|2|KNC|8
+2|2|Kabel Deutschland|1981,1983
+2|2|KabelBW|1981,1983,2174
+2|2|Kiss|2132
+2|2|Knology|1877
+2|2|KoolConnect|1481
+2|2|Kreatel|2030
+2|2|LG|144
+2|2|MS|303
+2|2|Macab|817
+2|2|Madritel|1230
+2|2|Mediacom|1376,1877
+2|2|Mega TV|2683
+2|2|Memorex|0
+2|2|Mitsubishi|3
+2|2|Motorola|1376,476,1187,1982,858,1439,2030,2378,810,1254,276,1106
+2|2|Multitech|883
+2|2|MyLGTV|2682
+2|2|Myrio|1602,1822
+2|2|NET|1439
+2|2|NTL|1060,1068,1439,276,3
+2|2|Noos|817,1624
+2|2|Nova Vision|8
+2|2|Novaplex|8
+2|2|Now TV|2013
+2|2|Oak|303
+2|2|Ono|1068
+2|2|Optus|1060,276
+2|2|Orange|2407
+2|2|PCCW|2013
+2|2|PVP Stereo Visual Matrix|3
+2|2|Pace|1376,1877,1982,1060,1068,877,237,8,1577
+2|2|Panama|107
+2|2|Panasonic|1982,1760,0,144,107,8
+2|2|Paragon|0,525,8
+2|2|Penney|0
+2|2|Philips|1305,1582,2174,317,817
+2|2|Pioneer|1877,877,1782,144,533
+2|2|Premiere|2174
+2|2|PrimeTV|2030
+2|2|Primestar|2030
+2|2|Pulsar|0
+2|2|Qtel|1822
+2|2|Quasar|0
+2|2|RadioShack|303,883
+2|2|Regal|279,273,276
+2|2|Rogers|1877
+2|2|Runco|0
+2|2|Sagem|2407,817,1624
+2|2|Salora|0
+2|2|Samsung|1877,1060,1666,1987,2015,2174,2407,0,144,3,778,840
+2|2|Scientific Atlanta|1877,877,858,1982,1987,2132,2345,477,237,0,3,8
+2|2|Sejin|1602
+2|2|SetaBox|1917
+2|2|Shaw|1376
+2|2|Skyworth|1464
+2|2|Sony|1006
+2|2|Sprucer|144
+2|2|StarHub|276
+2|2|Starcom|3
+2|2|Stofa|2015
+2|2|Suddenlink|1376,1877
+2|2|Suena Madritel|1230
+2|2|Supercable|276
+2|2|Supermax|883
+2|2|SureWest|1481
+2|2|T-Home|2132
+2|2|TCL|1445
+2|2|TS|3,303
+2|2|Taihan|778
+2|2|Telenet|1920
+2|2|Telewest|1068,1987
+2|2|Thomson|1582,1981,1982,1983,2174,2237,2407
+2|2|Time Warner|1376,1877,2187
+2|2|Time Warner cable|1877
+2|2|Tivo|2576
+2|2|TongKook|840
+2|2|Torx|3
+2|2|Toshiba|0
+2|2|Trans PX|276,303
+2|2|TransACT|1106
+2|2|Tristar|883
+2|2|UPC|1582
+2|2|US Electronics|276,3,8
+2|2|United Cable|276,3
+2|2|V2|883
+2|2|Verizon|2378
+2|2|Viasat|2030
+2|2|Videoway|0
+2|2|Viewmaster|883
+2|2|Viken Fibernett|2030
+2|2|Virgin Media|1060,1068,1987
+2|2|Vision|883
+2|2|Visiopass|817
+2|2|Vortex View|883
+2|2|WideOpenWest|1877
+2|2|Zenith|0,525,899,8
+2|2|Ziggo|660,1666,2015,2447
+2|2|i3 Micro|1602
+3|2|Akado|2339
+3|2|Americast|899
+3|2|Amino|1822
+3|2|Bright House|1376,1877
+3|2|Cable One|1376,1877
+3|2|Cablevision|1376,1877,1006
+3|2|Charter|1376,1877,2187
+3|2|Cisco|1877,1982
+3|2|Comcast|1376,1877,1982,2576
+3|2|Cox|1376,1877
+3|2|Digeo|1187,2187
+3|2|Freebox|1482,1976
+3|2|General Instrument|810
+3|2|Homecast|2301
+3|2|Humax|1981,1983,2339
+3|2|Insight|1376,1877
+3|2|Jerrold|810
+3|2|Knology|1877
+3|2|Mediacom|1376,1877
+3|2|Motorola|1376,1187,810,1106
+3|2|Myrio|1822
+3|2|Noos|1624
+3|2|Pace|1877,237
+3|2|Panasonic|1982
+3|2|Philips|1582
+3|2|Pioneer|1877,877
+3|2|Rogers|1877
+3|2|Sagem|1624
+3|2|Samsung|1877,1987
+3|2|Scientific Atlanta|1877,1982,1987,877
+3|2|Shaw|1376
+3|2|Sony|1006
+3|2|Suddenlink|1376,1877
+3|2|Supercable|276
+3|2|Telenet|1920
+3|2|Telewest|1987
+3|2|Thomson|1582
+3|2|Time Warner|1376,1877,2187
+3|2|Time Warner cable|1877
+3|2|Tivo|2576
+3|2|UPC|1582
+3|2|Virgin Media|1987
+3|2|WideOpenWest|1877
+3|2|Zenith|899
+3|4|ADB|1491
+3|4|Com Hem|1176,2357
+3|4|Foxtel|1356
+3|4|Handan|1957
+3|4|Humax|1176
+3|4|Kathrein|1561,2569
+3|4|Numericable|2466
+3|4|Pace|1356
+3|4|Philips|2466
+3|4|Siemens|1657
+3|4|TechniSat|1195,1197
+3|4|Topfield|1545,1783
+3|4|Vantage|2297
+3|4|Ziggo|1657,2443
+4|10|AH!|157
+4|10|AVI|157
+4|10|Acoustic Research|420
+4|10|Admiral|305
+4|10|Advantage|32
+4|10|Aiwa|157
+4|10|Arcam|157
+4|10|Atoll Electronique|157
+4|10|Audio Research|157
+4|10|Audiolab|157
+4|10|Audiomeca|157
+4|10|Audioton|157
+4|10|Balanced Audio Technology|157
+4|10|Burmester|420
+4|10|Bush|388
+4|10|CCE|157
+4|10|CDC|420
+4|10|CEC|420
+4|10|Cairn|157
+4|10|California Audio Labs|29,303
+4|10|Cambridge|157
+4|10|Cambridge Audio|157
+4|10|Cambridge Soundworks|157
+4|10|Carver|157,179
+4|10|Curtis Mathes|32
+4|10|Cyrus|157
+4|10|DKK|0
+4|10|DMX Electronics|157
+4|10|Denon|3,34,873
+4|10|Dual|3
+4|10|Dynaco|157
+4|10|Dynamic Bass|179
+4|10|Emerson|305
+4|10|Fisher|0,179
+4|10|Funai|305
+4|10|Garrard|420
+4|10|Genexxa|32,0,37,179,305
+4|10|Goldmund|157
+4|10|Goodmans|305
+4|10|Grundig|157
+4|10|Hafler|173
+4|10|Harman/Kardon|157,173,100
+4|10|Hitachi|32
+4|10|Inkel|157
+4|10|Integra|101
+4|10|JVC|72,1294,32
+4|10|Jerrold|3
+4|10|KLH|1318
+4|10|Kenwood|626,28,190,157,36,681,0,29,37
+4|10|Krell|157
+4|10|LXI|179,305
+4|10|Linn|157
+4|10|Loewe|157
+4|10|MCS|29
+4|10|MTC|420
+4|10|Magnavox|157,274,305
+4|10|Marantz|626,29,157
+4|10|Matsui|157
+4|10|McIntosh|256
+4|10|Memorex|32,0,468,179,305,420
+4|10|Meridian|157
+4|10|Micromega|157
+4|10|Miro|0
+4|10|Mission|157
+4|10|Modulaire|0,32,468,87,145,179,420
+4|10|Myryad|157
+4|10|NAD|0,721
+4|10|NSM|157
+4|10|Naim|157
+4|10|Oak|145
+4|10|Onkyo|1327,101,868
+4|10|Optimus|0,32,420,1063,37,468,87,145,179,305,1075
+4|10|Panasonic|29,303,388,752
+4|10|Parasound|420
+4|10|Penney|29
+4|10|Philips|626,157,274
+4|10|Pioneer|1062,32,1087,101,1063,468,305
+4|10|Polk Audio|157
+4|10|Primare|157
+4|10|Proceed|420,157
+4|10|Proton|157
+4|10|QED|157
+4|10|Quad|157
+4|10|Quasar|29
+4|10|RCA|1062,32,53,420,468,179,305
+4|10|RadioShack|0,32,468,179,420,1075
+4|10|Radiola|157
+4|10|Realistic|420,0,32,468,87,145,179,305
+4|10|Restek|157
+4|10|Revox|157
+4|10|Roksan|420
+4|10|Rotel|157,420
+4|10|Royal|420
+4|10|SAE|157
+4|10|SAST|157
+4|10|Saisho|0
+4|10|Sansui|157,0,305
+4|10|Sanyo|0,87,179
+4|10|Scott|305
+4|10|Sears|179,305
+4|10|Sharp|34,861,37
+4|10|Sherwood|1067
+4|10|Siemens|157
+4|10|Silsonic|36,888
+4|10|Simaudio|157
+4|10|Sonic Frontiers|157
+4|10|Sony|490,0,100,1364,185
+4|10|Soundesign|145
+4|10|Sugden|157
+4|10|Sylvania|157
+4|10|Symphonic|305
+4|10|TAG McLaren|157
+4|10|Tandy|32
+4|10|Tascam|420
+4|10|Teac|420,490
+4|10|Technics|29,303
+4|10|Techwood|303
+4|10|Thomson|53
+4|10|Thorens|157
+4|10|Thule Audio|157
+4|10|Tokai|420
+4|10|Universum|157,53
+4|10|Victor|72
+4|10|Wards|157,53,0,32,87,179
+4|10|Yamaha|490,36,1292,32,868,888
+4|10|Yorx|0
+4|10|Zonda|157
+5|11|Accutek|1215
+5|11|Amana|1716
+5|11|Bionaire|846,1215
+5|11|Frigidaire|1333
+5|11|GE|240
+5|11|GoldStar|1537
+5|11|Holmes|1215
+5|11|Kenmore|1537
+5|11|LG|1537
+5|11|Lasko|846
+5|11|Lightolier|184
+5|11|Lutron|597,1239,1597
+5|11|Marmitek|167
+5|11|One For All|167
+5|11|PCS|184
+5|11|RadioShack|240
+5|11|Royal Sovereign|1651
+5|11|Russound|1232
+5|11|Security System|167
+5|11|Sharper Image|846
+5|11|SmartLinc|184
+5|11|Universal|167
+5|11|Universal X10|167
+5|11|Whirlpool|1332
+5|11|Windmere|1215
+5|11|X10|2267,167
+6|6|Aiwa|203
+6|6|Baolijin|726
+6|6|Caishi|726
+6|6|Caosde|726
+6|6|Carver|64,194,323
+6|6|Cashi|726
+6|6|Denon|59,172
+6|6|Disco Vision|23
+6|6|Funai|203
+6|6|GoldStar|172
+6|6|Grundig|59
+6|6|Harman/Kardon|194
+6|6|Hitachi|23
+6|6|Lingxian|1220
+6|6|Magnavox|64,194,217
+6|6|Marantz|64,194
+6|6|Microboss|726
+6|6|Mitsubishi|59
+6|6|NAD|59
+6|6|Nagsmi|59
+6|6|Optimus|59
+6|6|Panasonic|204
+6|6|Philips|64,194
+6|6|Pioneer|59,23
+6|6|Polk Audio|194
+6|6|Quasar|204
+6|6|Realistic|203
+6|6|Renaissance|323
+6|6|Salora|64
+6|6|Samsung|323
+6|6|Sega|23
+6|6|Skyworth|1218
+6|6|Sony|193,201
+6|6|TCL|1184
+6|6|Technics|204
+6|6|Telefunken|59
+6|6|Theta Digital|194
+6|6|Toshiba|59
+6|6|Wards|59
+6|6|Yamaha|217
+7|8|Altec Lansing|1056,2251
+7|8|Apple|1115
+7|8|DLO|1155
+7|8|Denon|2502
+7|8|Logitech|2182
+7|8|Memorex|2119
+7|8|Netgear|1785
+7|8|Philips|2327
+7|8|Polk Audio|2228
+7|8|Roku|1828
+7|8|Samsung|2609
+7|8|Vizio|2454
+7|8|Yamaha|2021,2116,2458
+7|9|Aiwa|159
+7|9|Altec Lansing|1485
+7|9|Apple|1115,1644
+7|9|Cambridge Soundworks|1530
+7|9|Creative|872
+7|9|Cyrus|1491
+7|9|D-Link|1522
+7|9|Elan|1491
+7|9|Imerge|1491
+7|9|Integra|1491,1789
+7|9|Marantz|1491
+7|9|Motorola|1464
+7|9|NaviPod|1644
+7|9|Netgear|1785
+7|9|Omnifi|1605
+7|9|Onkyo|1789
+7|9|Revox|1491
+7|9|SSI|1522
+7|9|Sony|159
+7|9|TEN Technology|1644
+7|9|Xantech|1491
+7|9|Yamaha|1809,1810
+8|3|A.C.Ryan|2535,2709
+8|3|ABS|1272
+8|3|ADB|2254,2586
+8|3|AMTC|2185
+8|3|AT&T|858
+8|3|ATMT|2270
+8|3|Access HD|2185
+8|3|Accurian|1653
+8|3|Acer|1272
+8|3|Airlink 101|2491
+8|3|Alienware|1272
+8|3|Alpha Digital|2185
+8|3|Amino|1481,1615,1673,2482
+8|3|Apex Digital|2478
+8|3|Apple|2615
+8|3|Argosy|2270
+8|3|Artec|2490
+8|3|Axonix|1447
+8|3|CASTi|2305
+8|3|Channel Master|2365
+8|3|Cisco|2345,2517
+8|3|Claritas|1272
+8|3|Coby|2667
+8|3|Coship|2487
+8|3|CyberPower|1272
+8|3|D-Link|1731,2186,1554
+8|3|DVICO|2153
+8|3|Daewoo|2338
+8|3|Daily Media|1272
+8|3|Daytek|2305
+8|3|Dgtec|1363
+8|3|Digital Stream|2303
+8|3|Digitech|2260
+8|3|Dish Network|2470
+8|3|Echostar|2470
+8|3|Elonex|1272
+8|3|Emtec|2535,2709
+8|3|Epson|1563
+8|3|Escient|1370,1371,1372,1373
+8|3|EverTech|2535
+8|3|Fantec|2535,2709
+8|3|Fujitsu Siemens|1272
+8|3|GE|2360,2450
+8|3|Galaxy|2238
+8|3|Gateway|1272
+8|3|Goodmind|2450
+8|3|Gridlink|2348
+8|3|HP|1272,1267
+8|3|Hewlett Packard|1272,1267
+8|3|Howard Computers|1272
+8|3|Hush|1272
+8|3|INOi|2270
+8|3|Insignia|1415
+8|3|Iomega|2238,2270
+8|3|KoolConnect|1481
+8|3|LG|1415
+8|3|LaCie|2238
+8|3|Lasonic|2348
+8|3|Linksys|1272,1365
+8|3|Macpower|2238
+8|3|Magnavox|1563
+8|3|Mede8er|2709
+8|3|Media Center PC|1272
+8|3|Memorex|2486
+8|3|Memup|2270
+8|3|MicroGEM|2489
+8|3|Microsoft|2049,1272,1805
+8|3|Mind|1272
+8|3|Motorola|858,2378,1363
+8|3|Netgear|2036
+8|3|Niveus Media|1272
+8|3|Northgate|1272
+8|3|Olidata|2270
+8|3|Packard Bell|1272,2238
+8|3|Panasonic|1120
+8|3|Philco|1563
+8|3|Philips|1272
+8|3|Pinnacle Systems|1447
+8|3|Pioneer|1010
+8|3|Popcorn Hour|2260
+8|3|RCA|2325,2454
+8|3|RaidSonic|2238
+8|3|Ricavision|1272
+8|3|Roku|1486,2371
+8|3|SMC|1456
+8|3|Samsung|1190,1490,2592,1967
+8|3|Sansonic|2348
+8|3|Scientific Atlanta|858,2345,2517
+8|3|Sensory Science|1126
+8|3|Sharp|1010
+8|3|Sling Media|2612
+8|3|Sony|1272,1324,1364
+8|3|Stack 9|1272
+8|3|Sunkey|2695
+8|3|SureWest|1481
+8|3|Sylvania|1563
+8|3|Systemax|1272
+8|3|TViX|2153
+8|3|Tagar Systems|1272
+8|3|Tivax|2185
+8|3|Toshiba|1272
+8|3|Touch|1272
+8|3|Trust|1272
+8|3|VIA Technologies|1272
+8|3|Ventura|2454
+8|3|Venturer|2454
+8|3|Verizon|2378
+8|3|Viewsonic|1272,1329
+8|3|Vizio|1126
+8|3|Voodoo|1272
+8|3|Vudu|2298
+8|3|Western Digital|2558
+8|3|Winegard|2454
+8|3|Woxter|2535
+8|3|Xbox|2049,1272,1805
+8|3|ZT Group|1272
+8|3|Zenith|1415
+8|3|Zentech|2491
+8|3|Zinwell|2488,1363
+8|3|chiliGREEN|2535
+8|3|iBUYPOWER|1272
+8|3|me2 2270|2535
+9|8|ADC|531
+9|8|AEG|1389,1390
+9|8|AFK|1389
+9|8|AMC|1077
+9|8|AMW|1563
+9|8|ASCOMTEC|1389
+9|8|AVLight|158
+9|8|Aiwa|1405,1388,1641,121,1089,1827,1189,1269,158,189
+9|8|Akai|1512,609,1390,1220
+9|8|Alco|1390
+9|8|All-Tel|1390
+9|8|Amphion Media Works|1563
+9|8|Amstrad|1390
+9|8|Anam|1609,609,1074
+9|8|Anam National|609
+9|8|Apex Digital|1257,1774
+9|8|Arcam|1189,642,1120,189
+9|8|Audiolab|1189,189
+9|8|Audiosonic|1389
+9|8|Audiotronic|1189
+9|8|Audiovox|1390,1627
+9|8|Audioworld|1390
+9|8|B & K|820
+9|8|Bang & Olufsen|799
+9|8|Baseline|1554
+9|8|Basic Line|1554
+9|8|Belson|1389
+9|8|Binatone|1389
+9|8|Blue Sky|1390
+9|8|Bose|1229,1253,1629,1841,1933,1357
+9|8|Boston Acoustics|2162
+9|8|Bush|797,1772
+9|8|CCE|1352
+9|8|Cairn|189
+9|8|Cambridge|189
+9|8|Cambridge Audio|1647,189
+9|8|Cambridge Soundworks|1370
+9|8|Cameron|2426
+9|8|Capetronic|531
+9|8|Carver|1189,121,1089,189,1289
+9|8|Cat|1389
+9|8|Centrex|1257
+9|8|Centrum|1220,1389
+9|8|Classic|1352
+9|8|Clatronic|1389,797
+9|8|Coby|1389,1263
+9|8|Cosmotron|797
+9|8|Criterion|1420
+9|8|Curtis|1389,797,1263
+9|8|Curtis Mathes|14
+9|8|DK Digital|1420
+9|8|DVX|1772
+9|8|Daewoo|1293
+9|8|Dantax|1390
+9|8|Dell|1383
+9|8|Delphi|1846
+9|8|Denon|2857,1360,1142,2279,771,1460,2820,121,1104,1306
+9|8|Denver|1389
+9|8|DiK|797
+9|8|Diamond|1390
+9|8|Digitech|1772
+9|8|Digitrex|1257
+9|8|Dual|1390,1220,1420
+9|8|Elta|1390,797
+9|8|Emerson|531
+9|8|EuroLine|1625
+9|8|Ferguson|531,1154
+9|8|Fine Arts|1189
+9|8|Fisher|1801,797
+9|8|Fonmix|1360
+9|8|Gateway|1517
+9|8|Genexxa|186
+9|8|Global Sphere|1625
+9|8|Glory Horse|1263
+9|8|Go Video|1352
+9|8|Goldmund|189
+9|8|Goodmans|609,1389,1390,797,1420,1611
+9|8|Grundig|1189,1089,189,797,1344,1772
+9|8|Grunkel|1390
+9|8|HCM|1390
+9|8|HE|1389
+9|8|Hanseatic|1390
+9|8|Harman/Kardon|1304,1306,2443,1189,2241,110,189,891,1289,1310
+9|8|HitPlus|2483
+9|8|Hitachi|1801,1344,1554
+9|8|Hiteker|1389
+9|8|Hoeher|1257
+9|8|Home Tech Industries|1389
+9|8|Hyundai|1625
+9|8|Inkel|27
+9|8|Insignia|1030,1077,2126,2169,2175,2474
+9|8|Integra|1298,1320,1805,135,842
+9|8|JBL|1306,1304,110
+9|8|JVC|1374,1495,1811,2040,2239,2331,74,1676,1058,531,1263
+9|8|KLH|1390,1428
+9|8|KXD|1389
+9|8|Kawasaki|1390
+9|8|Kenwood|1313,1570,712,1293,1569,27,186,1027
+9|8|Kioto|797
+9|8|Kompernass|797
+9|8|LG|1293,2197,2284,2676,1869
+9|8|Lenoxx|1389,1611
+9|8|Lenoxx Sound|1611
+9|8|Lifetec|797
+9|8|Linn|189
+9|8|Loewe|189
+9|8|Lumatron|1772
+9|8|MBO|1352
+9|8|MCS|39
+9|8|MEI|1390
+9|8|Magnat|1389
+9|8|Magnavox|1189,1269,1514,1089,189,531,1266
+9|8|Magnum|1611
+9|8|Marantz|1189,1269,1289,2114,642,1089,2117,39,189,891
+9|8|Matsui|797
+9|8|McIntosh|1289
+9|8|Medion|2197,797,1420,1598
+9|8|Memorex|14
+9|8|Metz|1554
+9|8|Micromaxx|1420
+9|8|Micromega|1189,189
+9|8|Microstar|797
+9|8|Mitsubishi|1393
+9|8|Musicmagic|1089
+9|8|Mustek|1352
+9|8|Muvid|2476
+9|8|Mx Onda|797
+9|8|Myryad|1189,189
+9|8|NAD|320,609
+9|8|Nakamichi|1313
+9|8|Nexius|1390
+9|8|Nikkai|1389
+9|8|Nikko|609
+9|8|Niro|1634
+9|8|Norcent|1389
+9|8|Nova|1389
+9|8|Omni|1772
+9|8|Onkyo|842,1298,1320,1531,1805,135
+9|8|Optimus|1023,158,74,14,121,186,531,670,797,1074
+9|8|PJ|1389
+9|8|Palladium|1293,1390,797,1220,1344
+9|8|Panasonic|1308,1518,1275,1288,1316,1548,1633,1763,1764,2221,2452,2967,1309,1765,1779,39,309
+9|8|Paramount Pictures|1220
+9|8|Penney|39
+9|8|Philco|1390
+9|8|Philips|1189,1269,1266,2311,2459,642,1089,1120,1289,1673,1831,2029,2341,189,891
+9|8|Pioneer|1384,1935,1023,1123,1284,1459,1623,14,150,186,531,630
+9|8|Polk Audio|1289,1988,2244,2270,189
+9|8|Prima Electronic|797
+9|8|ProVision|1389
+9|8|Proficient|609
+9|8|Proline|1390,797,1257
+9|8|Proscan|1254
+9|8|QONIX|1390,1420
+9|8|Qisheng|1609,1390
+9|8|Quadro|1389
+9|8|Quasar|39
+9|8|RCA|1609,1254,1390,1511,2041,1023,1123,1459,2426,2490,531,1074,1154
+9|8|RadioShack|1609,1263
+9|8|Radiola|189
+9|8|Radionette|1293,1634
+9|8|Realistic|1609,158,121,186
+9|8|Recco|797
+9|8|Redstar|1389
+9|8|Restek|189
+9|8|Revox|1089,189,186
+9|8|Rio|1869,1383
+9|8|Rio Audio|1383
+9|8|Roadstar|797,1263,1611
+9|8|Rotel|793
+9|8|SEG|1554
+9|8|Saba|531
+9|8|Samsung|1295,1304,1500,1868,1581
+9|8|Sangean|2165
+9|8|Sansui|609,1089,1189,189,1625,1764,1772
+9|8|Sanyo|1469,1801,670
+9|8|Schneider|1390,110,531,1220
+9|8|Scott|1389
+9|8|Sharp|771,186,653,1614,1634
+9|8|Sharper Image|797,1263
+9|8|Sherwood|1077,1517,1653,1905,2169,653
+9|8|Sherwood Newcastle|2169
+9|8|Shinco|1390
+9|8|Siemens|609
+9|8|Silsonic|176
+9|8|Silva Schneider|1390
+9|8|Sirius|1627,1811,1987,1988
+9|8|Sonic Blue|1869,1383
+9|8|Sony|1759,1058,1441,1258,1622,1558,1658,1758,1822,1858,2172,2320,2522,2475,1882,1827,1722,1454,1358,1158,1112,158,793,1406
+9|8|Soundesign|670
+9|8|Soundwave|609
+9|8|Starlight|797
+9|8|Stereophonics|1023
+9|8|Sunfire|1313
+9|8|Sungoo|1313
+9|8|Sunstech|1420
+9|8|Sylvania|797
+9|8|TAG McLaren|1189
+9|8|TCM|797
+9|8|Tandberg|1554
+9|8|Targa|1293
+9|8|Teac|1390,1528,1609,609,110,797,1074
+9|8|Technics|1308,1518,1309,1633,1763,1765,39,309,1384
+9|8|Technika|2426
+9|8|Techwood|609,1554
+9|8|Tedelex|1625
+9|8|Telefunken|1389,1390,531,1772
+9|8|Tevion|1389,1611
+9|8|Thomson|1254,1194,1354,1154
+9|8|Thorens|1189,189
+9|8|Tokai|1390
+9|8|Toshiba|1788,1123,135,842,1572
+9|8|Uher|531
+9|8|United|1390,1625,1772
+9|8|Universum|1609,609,1390,189,797,1220
+9|8|Venturer|1390,797
+9|8|Vestel|1554
+9|8|Victor|74
+9|8|Vizio|1517
+9|8|Voxson|1420
+9|8|Vtrek|2426,2483
+9|8|Waitec|1352
+9|8|Wards|158,189,14
+9|8|Watson|797
+9|8|Welltech|797
+9|8|Wharfedale|1390,1772
+9|8|XM|1846,1406
+9|8|Xenius|1390
+9|8|Yamaha|176,376,1176,1276,1331,1375,1376,1476,2061,2455,2467,712,1776,1023,27,186
+9|8|Yukai|1352
+9|8|Zenith|1293
+9|8|eBench|797
+9|8|iHome|2435
+9|8|iLive|2013
+9|8|iSymphony|2258
+10|4|@Sky|1334
+10|4|@sat|1300
+10|4|A-Mark|345
+10|4|ABsat|713,123
+10|4|ADB|887,1367,2367,642,241,1259,1418,1473,1491
+10|4|AGS|710
+10|4|ASA|740
+10|4|ASCI|114,1334
+10|4|ASLF|713
+10|4|Acoustic Solutions|1284
+10|4|Airis|1659,1993
+10|4|Akai|200
+10|4|Akura|1626
+10|4|Alba|713,1284,1659,2296,1811
+10|4|Allsat|200,1017,1043
+10|4|Alltech|713
+10|4|Allvision|1334,1232,1412
+10|4|AlphaStar|772
+10|4|Amitronica|713
+10|4|Ampere|396,132
+10|4|Amstrad|396,713,847,1175,1662,1693,1801,1848,2139,132,345,795,863,882,1113
+10|4|Anglo|713
+10|4|Ankaro|713,1279
+10|4|Ansonic|2418
+10|4|AntSat|1017,1083
+10|4|Apro|1672
+10|4|Arcon|1043,1075,1279
+10|4|Arena|1736
+10|4|Armstrong|200
+10|4|Arnion|1300
+10|4|Asat|200
+10|4|AssCom|853
+10|4|Astacom|710
+10|4|Aston|142,1261
+10|4|Astra|713
+10|4|Astratec|1743,1929
+10|4|Astro|173,658,1099,1100,1816,2026,2627,1113
+10|4|AtSky|1334
+10|4|Atlanta|2418
+10|4|Atlantic Telephone|1333
+10|4|Atsat|1300
+10|4|Audiola|2418
+10|4|Audioline|1672
+10|4|Aurora|879,642,1333,1433
+10|4|Austar|879,642,497,863,1176,1259
+10|4|Avalon|396
+10|4|Awa|1659
+10|4|Axiel|710
+10|4|Axil|1659,1777,1993,2139,2418,1457
+10|4|Axis|1111
+10|4|Axitronic|1626
+10|4|B.net|1672
+10|4|B@ytronic|740,1412
+10|4|BIG TV|2463
+10|4|BT|710,1296
+10|4|Bauckhage|1331
+10|4|Bell ExpressVu|775,1170
+10|4|Belson|2139,2418
+10|4|Bentley Walker|1017
+10|4|Best Buy|1993,2139
+10|4|Big Sat|1572,1457
+10|4|Black Diamond|1284
+10|4|Blaupunkt|173
+10|4|Blue Sky|713
+10|4|Blue Star|1279
+10|4|Boca|713,1366,2026,2308,132,1232
+10|4|Boshmann|1631
+10|4|Boston|710,1251
+10|4|Boxer|1692,1957
+10|4|Brainwave|658,1672
+10|4|British Sky Broadcasting|847,1175,1656,1662,1847
+10|4|Broco|713
+10|4|BskyB|847,1175,1662
+10|4|Bubu Sat|713
+10|4|Bush|1284,1291,1626,1645,1672,1743,1935,1993,2167,2376,1811
+10|4|CDV|1993
+10|4|CGV|2034,1413,1567
+10|4|CMX|2205
+10|4|CNS|1367
+10|4|CS|1631
+10|4|Canal|853
+10|4|Canal Digitaal|2466
+10|4|Canal Digital|853,1004,1334,1780,2553,1622
+10|4|Canal Satellite|853,2107,2657,1339
+10|4|Canal+|853,2107,2657
+10|4|CanalSat|853,2107,2657
+10|4|Centrex|1457
+10|4|Century|856
+10|4|Chaparral|216
+10|4|Cherokee|123,710
+10|4|Chess|114,713,1334,1626,2026,1085
+10|4|Chili|1718
+10|4|CityCom|658,1176,299,394,818,1075,1232
+10|4|Clarity|2296
+10|4|Classic|1672
+10|4|Clatronic|1413
+10|4|Clayton|1626
+10|4|Clemens Kamphus|396
+10|4|Cobra|396
+10|4|Colombia|132
+10|4|Columbia|132
+10|4|Com Hem|1176,1915,2357
+10|4|Comag|1366,2026,2308,132,1232,1412,1413,1579
+10|4|Comwell|1956
+10|4|Conia|2167,1695
+10|4|Connexions|396
+10|4|Conrad|132
+10|4|Contec|394
+10|4|Continental Edison|1695
+10|4|Coship|1672,2525,1457
+10|4|Crossdigital|1109
+10|4|Crown|1284
+10|4|Cryptovision|795
+10|4|Cyfra+|1076,1409,2593
+10|4|Cyfrowy Polsat|253,853,2262,2527
+10|4|Cyrus|200
+10|4|D-box|723,1114,873
+10|4|DAK|1993
+10|4|DMT|1075
+10|4|DNT|200,396
+10|4|DRE|1176,2622
+10|4|DSE|2418,1375
+10|4|DSTV|879,642,1433
+10|4|DVX|1993,2167
+10|4|DX Antenna|1530
+10|4|Daeryung|396
+10|4|Daewoo|713,1743,1111,1296
+10|4|Dantax|1626
+10|4|Delfa|863
+10|4|Deltasat|1075
+10|4|Denver|2418
+10|4|Dgtec|1631,2418,1242,1542
+10|4|DiPro|1367,1543
+10|4|Dick Smith Electronics|2418
+10|4|Digenius|299,1161
+10|4|Digi|2026
+10|4|Digi Raum Electronics|1176,2622
+10|4|DigiLogic|1284,1993
+10|4|DigiQuest|1300,1631,863,1457,1473
+10|4|DigiSat|1232
+10|4|Digiality|1334,1685
+10|4|Digifusion|1645,1743,1929
+10|4|Digihome|1284,1935,2034
+10|4|Digisky|1457
+10|4|DigitAll World|1227
+10|4|Digital|2308
+10|4|Digital Vision|1929
+10|4|DigitalBox|1100,1631
+10|4|Digitel+|1659
+10|4|Digittrade|1659
+10|4|Digiturk|1076,2097
+10|4|Digiwave|1631
+10|4|Dijam|1296
+10|4|Dilog|1780,1957
+10|4|DirecTV|1377,392,566,639,1639,1142,247,749,1749,1856,1076,1109,1414,1442,1609,99,724,819,1108,1392,1640
+10|4|Discovery|710
+10|4|Dish Network|775,1505,1170,1775
+10|4|Dish Network System|1505,1005,775,1775
+10|4|DishTV|1300,1780
+10|4|Dishpro|775,1505,1775,1005
+10|4|Distratel|1704,1283
+10|4|Doro|1672
+10|4|Dream Multimedia|1237,1652,1923
+10|4|Dual|2034
+10|4|Durabrand|1284,2034,2241
+10|4|Echolink|1366,1572
+10|4|Echostar|775,1505,1170,1775,396,713,853,1323,1409,2262,2527,1005,167,610,1200,871,1086,1418,1473
+10|4|Edision|1631,2306
+10|4|Einhell|713,132
+10|4|Elap|713,1567
+10|4|Elbe|2418
+10|4|Electron|1956,1279
+10|4|Elisa|1322
+10|4|Elless|740
+10|4|Elsat|713
+10|4|Elta|200,1659
+10|4|Emme Esse|871
+10|4|Emtec|1659
+10|4|Energy Sistem|1631,2418
+10|4|Engel|713,1801,1993,1017,1251
+10|4|Esat|879
+10|4|Eurieult|882
+10|4|EuroLine|1251
+10|4|Europa|863
+10|4|Europhon|713,132,299
+10|4|Eurosky|114,740,132,262,299
+10|4|Eurostar|818
+10|4|Eutelsat|713
+10|4|Eutra|740
+10|4|Evesham|2034
+10|4|Expressvu|775,1775
+10|4|Eycos|1279
+10|4|FMD|114,1251,1413,1457
+10|4|FPE|1993
+10|4|FTE|863
+10|4|FTEmaximal|713,863
+10|4|Fagor|1611
+10|4|Fenner|713
+10|4|Ferguson|1291,1743,1929,711
+10|4|Finepass|1780,1593
+10|4|Finlux|1626
+10|4|FinnSat|740
+10|4|Flair Mate|713
+10|4|Force|1101
+10|4|Fortec Star|1017,1083
+10|4|Foxtel|879,1176,720,497,795,1162,1356
+10|4|Fracapro Planet|871
+10|4|Fracarro|125,871
+10|4|France Telecom|871
+10|4|Freesat|882
+10|4|Freesat+|2443
+10|4|Fuba|173,396,1801,262,299,394,1161,1214,1251
+10|4|Fugionkyo|125
+10|4|Funai|2167,1377
+10|4|GE|566,392
+10|4|GF Good Friends|1043
+10|4|GF Star|1043
+10|4|GOD Digital|200
+10|4|GOI|775,1775
+10|4|Galaxis|853,879,1111,863,1101,1557
+10|4|Galaxy|1956
+10|4|Gardiner|818
+10|4|Garnet|1075
+10|4|GbSAT|1214
+10|4|Gecco|1412
+10|4|General Instrument|869
+10|4|General Satellite|1176,2622
+10|4|Globo|740,1334,1429,1626,2026,1251,1412
+10|4|Gold Box|853
+10|4|Gold Vision|1631,1017
+10|4|GoldMaster|1334
+10|4|GoldStar|394
+10|4|Golden Channel|1572
+10|4|Golden Interstar|1572,1283
+10|4|Goodmans|1284,1291,2034,2376
+10|4|Gradiente|856,99,887
+10|4|Gran Prix|740
+10|4|Grandin|1626
+10|4|Grocos|1409
+10|4|Grundig|173,847,853,879,1284,1291,1659,1672,1780,2034,2367,2376,345
+10|4|HB|1801,1214
+10|4|HDT|1159
+10|4|HE@D|1279
+10|4|HNE|132
+10|4|HTS|775,1775
+10|4|Haensel & Gretel|132
+10|4|Haier|2418
+10|4|Hallo|1626
+10|4|Handan|1780,1957,1622
+10|4|Hanseatic|1099,1100
+10|4|Hauppauge|1672
+10|4|Hills|1232
+10|4|Hirschmann|173,396,740,2026,1111,125,299,710,882,1085,1232,1412
+10|4|Hisense|1535
+10|4|Hitachi|1284,2034,749,819,1250
+10|4|Homecast|1736,2525,1214,1680
+10|4|Hornet|1300
+10|4|Houston|396,775
+10|4|Hughes Network Systems|1142,749,1749,1442
+10|4|Humax|1377,1176,1427,1675,1743,1808,1915,2144,2357,2408,2443,2616,863,1406
+10|4|Huth|132,1017,1075
+10|4|Hyundai|2463,1075,1159
+10|4|ID Digital|1176
+10|4|ID Sat|1334
+10|4|ILLUSION sat|1631,1557
+10|4|ISkyB|887
+10|4|ITT|2418
+10|4|ITT Nokia|723,873
+10|4|Imperial|1100,1195,1197,1334,1429,1672
+10|4|InVideo|871
+10|4|Indovision|856,887
+10|4|Ingelen|114,396,882
+10|4|Inno Hit|1626
+10|4|Innova|99
+10|4|International|132
+10|4|Interstar|1017,1214
+10|4|Inves|1743,1993
+10|4|Irradio|1331
+10|4|Italtel|871
+10|4|JOK|710
+10|4|JVC|775,1170,1775
+10|4|Jadeworld|642
+10|4|Jaeger|1334
+10|4|Jerrold|869
+10|4|Jiuzhou|1450
+10|4|K-SAT|713
+10|4|KaTelco|1111
+10|4|KabelBW|1195,1197,1915
+10|4|Kamm|713
+10|4|Kaon|1300
+10|4|Kathrein|114,173,200,658,713,1561,2263,2569,123,249,394,442,480,504,553,818,1221,1416,1567
+10|4|Kennex|125
+10|4|Kenwood|853
+10|4|Key West|132
+10|4|Kiton|114
+10|4|Klap|710
+10|4|Kocmoc TB|1333
+10|4|Koenig|1631
+10|4|Koscom|1956,1043
+10|4|Kosmos|442,1333
+10|4|Kreiling|114,658,1626,249
+10|4|Kreiselmeyer|173
+10|4|Kross|1695
+10|4|L&S Electronic|1334,132,1043
+10|4|LA Digital|1743
+10|4|LG|1414,1075
+10|4|LaSAT|173,740,132,299
+10|4|Labgear|1296
+10|4|Lava|1631
+10|4|Legend|1718
+10|4|Legrand|1718
+10|4|Leiko|1626
+10|4|Lemon|1334
+10|4|Lenco|713
+10|4|Lenoxx|1611
+10|4|Lifesat|713,132,299,1043
+10|4|Linsar|1284
+10|4|Listo|1626
+10|4|Lodos|1284
+10|4|Logik|1284
+10|4|Logix|1017,1075
+10|4|Lorenzen|132,299,1161,1579
+10|4|Luxor|1935,873,345
+10|4|M Electronic|818
+10|4|M vision|1557
+10|4|MTEC|1214
+10|4|Magnavox|724,722
+10|4|Manata|713,132,710
+10|4|Manhattan|1300,710,1017,1083
+10|4|Maplin|2034
+10|4|Marantz|200
+10|4|Maspro|173,713,1530
+10|4|Master's|394
+10|4|Matsui|173,1284,1626,1743,1929,710
+10|4|Maximum|1334,1075,1685
+10|4|McIntosh|869
+10|4|MediaSat|853,2107
+10|4|Mediabox|853
+10|4|Mediacom|1206
+10|4|Mediastar|1572
+10|4|Medion|713,740,1334,1626,2026,132,299,1043,1075,1161,1232,1412
+10|4|Medison|713
+10|4|Mega|200
+10|4|Memorex|724
+10|4|Meo|2466
+10|4|Metronic|713,1334,1659,1704,2167,2269,132,818,1279,1283,1375
+10|4|Metz|173
+10|4|MiCO|1993,1811
+10|4|Micro|713
+10|4|Micro Elektronic|713
+10|4|Micro Technology|713
+10|4|Micromaxx|299
+10|4|Microstar|1075
+10|4|Microtec|713
+10|4|Mitsubishi|749
+10|4|Morgan's|200,713,2026,132,1232,1412
+10|4|Motorola|869,856,1473
+10|4|Movistar|2262,2263,2527
+10|4|Muller|1695
+10|4|Multibroadcast|879,642
+10|4|Multichoice|879,1959,1960,2059,2060,642,1333,1433,1559,1560
+10|4|Mustek|1659
+10|4|Mx Onda|1659
+10|4|MySky|1693,1848,1850
+10|4|Myryad|200
+10|4|Mysat|713
+10|4|NEOTION|1334
+10|4|Neom|1993
+10|4|Net Brazil|2262
+10|4|Netgem|1322
+10|4|Netsat|99,887
+10|4|Neuf TV|1322
+10|4|Neuhaus|713
+10|4|Neuling|132,1232
+10|4|Neusat|713,1279,1331
+10|4|Neveling|1161
+10|4|Nevir|1659
+10|4|Newton|396
+10|4|Next Level|869
+10|4|NextWave|1956,1017
+10|4|Nextvision|1956
+10|4|Nikkai|1993
+10|4|Nikko|200,713,723
+10|4|Noda Electronic|1704
+10|4|Nokia|723,853,1023,751,873,1223,1723
+10|4|Nordmende|1611
+10|4|Nova|1959
+10|4|Numericable|2466
+10|4|OSAT|345
+10|4|OctalTV|1505
+10|4|Okano|442
+10|4|Omega|887
+10|4|Omni|1993
+10|4|Onn|1284,2034,2241
+10|4|Openbox|1956
+10|4|Opensat|1956
+10|4|Opentel|1232,1412
+10|4|Optex|114,713,1611,1626,394,1043,1283
+10|4|Optimus|724
+10|4|Optus|879
+10|4|Orbis|1334,1232,1412
+10|4|Orbit|208
+10|4|Orbitech|114,1099,1100,1195,1197
+10|4|Origo|497
+10|4|P/Sat|1232
+10|4|PMB|713,1611,1659
+10|4|Pace|2657,2593,2466,2211,2097,2060,2059,1848,1693,1682,1662,1323,1175,887,853,847,200,720,795,497,329,241,1356,1423,1717,1850
+10|4|Pacific|1284,1375
+10|4|Packard Bell|1111
+10|4|Packsat|710
+10|4|Palcom|1409,299,1161,1331
+10|4|Palladium|396
+10|4|Panarex|1159
+10|4|Panasat|879,615,1333,1433
+10|4|Panasonic|247,701,847,1304,1404,1527
+10|4|Panda|173
+10|4|Pansat|1159
+10|4|Patriot|132,710
+10|4|Paysat|724
+10|4|Philips|1142,749,1749,1076,1442,856,99,853,208,887,200,1114,173,1499,1672,1743,2107,2176,2211,2466,2593,775,724,819,722,847,818,710,133,1543
+10|4|Phoenix|1956,2418
+10|4|Phonotrend|1780,1200,863,1017
+10|4|Pilotime|1339
+10|4|Pino|1334
+10|4|Pioneer|853,1142,329,1308,1442
+10|4|Planet|396,871
+10|4|Plasmatic|442
+10|4|Polytron|396,394
+10|4|Portland|1296
+10|4|Portugal Telecom|2466
+10|4|Power Sky|1279
+10|4|Preisner|396,1366,132,262,1101,1113
+10|4|Premier|2176,853,723,873,1429
+10|4|Premiere|723,1429,2176
+10|4|Premium|1736
+10|4|Prima|795
+10|4|Primacom|1111
+10|4|Primestar|869
+10|4|Pro Basic|853,2205
+10|4|Profile|710
+10|4|Proline|1284,1659
+10|4|Proscan|392,566
+10|4|Proton|1535
+10|4|QNS|1367,1402,1404
+10|4|Quadral|710
+10|4|Quelle|299
+10|4|RCA|392,566,143,1291,1142,775,855,1392,1442
+10|4|RFT|200
+10|4|RadioShack|869,566,775
+10|4|Radiola|200
+10|4|Radix|396,394,882,1113,1317
+10|4|Rebox|1214
+10|4|Regal|1251
+10|4|Reliance|2463
+10|4|RiksTV|1692,2367
+10|4|Roadstar|713,853
+10|4|Rollmaster|1413
+10|4|Rover|713
+10|4|Rownsonic|1567
+10|4|S-ZWO|1207
+10|4|SAB|1300,1956,1251
+10|4|SAT+|1409
+10|4|SCS|740,299,1331
+10|4|SEG|114,1284,1626,1993,1075,1087,1251
+10|4|SKR|713
+10|4|SKY|856,1856,99,847,887,1175,1358,1499,1662,1693,1848,2619,1014,711,1656,1847,1850
+10|4|SKY Brazil|856,887,1358,1499
+10|4|SKY Italia|853,1693,1848,1847
+10|4|SKY Mexico|856,2619
+10|4|SKY New Zealand|2211
+10|4|SKY PerfecTV!|2299,2616
+10|4|SL|740,1672,2026,132,299
+10|4|SM Electronic|713,1409,1200
+10|4|SR|132
+10|4|SVA|1455
+10|4|Saba|740,2205,820,710
+10|4|Sagem|208,1004,1114,1690,1692,2107,2553,2564,820,1307
+10|4|Saivod|1659,2418
+10|4|Samsung|1377,1276,1109,1442,1609,253,853,1206,1662,1682,1916,1142,1108,863,1017,1293,1458,1570
+10|4|Sansui|1545
+10|4|Sanyo|1626
+10|4|Sat Control|1300
+10|4|Sat Team|713
+10|4|SatCatcher|1956
+10|4|Satec|713
+10|4|Satelco|1232
+10|4|Satplus|1100
+10|4|Satstation|1083
+10|4|SatyCon|1631
+10|4|Schaub Lorenz|2418,1214
+10|4|Schneider|1206,710,1251
+10|4|Schwaiger|740,1334,1429,1631,1672,2308,1111,132,394,504,863,1075,1083,1317,1412,1457
+10|4|Sedea Electronique|114,1206,1626,132,125,1279,1283
+10|4|Seeltech|1993
+10|4|Seemann|396
+10|4|Seleco|871
+10|4|Septimo|1375
+10|4|Serd|1412
+10|4|Serino|610
+10|4|ServiSat|713,1251
+10|4|Servimat|1611
+10|4|Shark|1631
+10|4|Sharp|1935,2034
+10|4|Sherwood|1409
+10|4|Siemens|173,1334,1429,1626,1657
+10|4|Sigmatek|2139,2418
+10|4|SignalMAX|1956
+10|4|Silva|299
+10|4|SilverCrest|2026,2308
+10|4|Skantin|713
+10|4|Sky Brazil|856,887
+10|4|Sky Television|1014
+10|4|Sky XL|1251,1412
+10|4|Sky+|1175,1662,847,740,1334,2026
+10|4|SkySat|114,713,1100
+10|4|Skymaster|713,1334,1409,1545,1611,2205,2241,1200,1075,1085,1567
+10|4|Skymax|200
+10|4|Skypex|740
+10|4|Skyplus|1232,1334,1412
+10|4|Skyvision|1334
+10|4|Smart|396,713,1631,132,882,1101,1113,1232,1404,1413
+10|4|Sony|639,1639,847,853,1558,2299,282,1524,1640
+10|4|Star|887
+10|4|Star Choice|869
+10|4|Star Trak|772,869
+10|4|Starland|713
+10|4|Starlite|200
+10|4|Stream|1848,1847
+10|4|Stream System|1300
+10|4|Strong|713,853,879,1284,1300,1409,1626,1801,2235,2418,820,132,125,1159
+10|4|Sun Direct|2525
+10|4|Sunkai|123
+10|4|Sunny|1300
+10|4|Sunsat|713
+10|4|Sunstar|642,132
+10|4|Sunstech|1993,2139
+10|4|Supermax|1283
+10|4|Supernova|887
+10|4|SupportPlus|2167
+10|4|Supratech|1993,2139
+10|4|Systec|1334
+10|4|Sytech|2139
+10|4|TATA Sky|1997
+10|4|TBoston|1659,2139,2418
+10|4|TELE System|396,1409,1611,1801
+10|4|TNT SAT|1692,2564
+10|4|TPS|820,1307
+10|4|TT-micro|1429
+10|4|TWF|1993
+10|4|Tahnon|1704
+10|4|Teac|1322,1957,2139,1227,1251
+10|4|Tecatel|1200
+10|4|TechniSat|114,396,1099,1100,1195,1197,1322,262,863
+10|4|Technical|1626
+10|4|Technika|1284,1672,2034
+10|4|Technomate|1283,1610
+10|4|Technosat|1206,1331
+10|4|Technosonic|1672
+10|4|Technotrend|1429,1672
+10|4|Technowelt|132
+10|4|Techsan|1017
+10|4|Techwood|114,1284,1626,1935,2034
+10|4|Tele System Electronic|1251,1409,1611,1801
+10|4|TeleClub|1367
+10|4|Teleciel|1043
+10|4|Telefonica|2262,2263,2272,2527
+10|4|Telefunken|710
+10|4|Teleka|396,262,442
+10|4|Telestar|114,1099,1100,1195,1197,1334,1626,1672,1251,1610
+10|4|Telesystem|1801
+10|4|Teletech|114
+10|4|Televes|1300,1334,132,1214,1742
+10|4|Televisa|887
+10|4|Telewire|1232
+10|4|Tevion|713,1409,1672,1993,2205,1593,1622
+10|4|Thomson|392,713,847,853,1046,1175,1291,1662,1848,1935,1997,2107,2176,566,820,711,710,1543
+10|4|Tiny|1672
+10|4|Tioko|132,394
+10|4|Titan|2205
+10|4|Tividi|1429,1736
+10|4|Tivo|1142,1442
+10|4|Tokai|200
+10|4|Tonna|713,1611
+10|4|Topfield|1206,1545,1783,1824,1986,1207,1208
+10|4|Toshiba|749,1749,790,1284,819,1285,1446,1530
+10|4|Transparent Video Systems|1780,1957
+10|4|Triax|114,200,396,713,853,1291,1611,1626,1631,2026,132,1113,1227,1251,1296,1742
+10|4|Tricolor TV|1176,2622
+10|4|Trio|1075
+10|4|Turnsat|713
+10|4|Twinner|713,1611,1742
+10|4|UEC|879,1358,2463,1162,1333,1356
+10|4|US Digital|1535
+10|4|USDTV|1535
+10|4|UltimateTV|1392,1640
+10|4|Uniden|724,722
+10|4|Unisat|200,132
+10|4|United|1251
+10|4|Unitymedia|1429
+10|4|Universum|114,173,740,1099,299,1087,1251
+10|4|Unixbox|1652
+10|4|VEA|2418
+10|4|VH Sat|299
+10|4|VTech|818
+10|4|Van Hunen|1161
+10|4|Vantage|2297
+10|4|Vaova|1993
+10|4|Variosat|173
+10|4|Ventana|200
+10|4|Vestel|114,1284,2034,1251
+10|4|Viasat|1195,1197,1682,2235
+10|4|ViewSat|1232
+10|4|Viola Digital|1672
+10|4|Vision|1626
+10|4|VisionNet|1557
+10|4|Visionic|125,1279,1283
+10|4|Visiosat|114,713,142,710,1413,1457,1718,1742
+10|4|Viva|856
+10|4|Vivax|2418
+10|4|Vivid|1162
+10|4|Volcasat|2418
+10|4|Voom|869
+10|4|Wavelength|1232,1413
+10|4|Wharfedale|200,1284,1935,2034
+10|4|Winbox|1801
+10|4|Wintel|299,1161
+10|4|Wisi|173,396,740,132,299
+10|4|Worldsat|114,123,710,1214,1251,1543
+10|4|Woxter|2139,2418
+10|4|XMS|1075
+10|4|Xcom|123
+10|4|Xsat|713,847,1323,123,1214
+10|4|Xtreme|1300
+10|4|Yakumo|1413
+10|4|Yamada|1993,2139,1718
+10|4|Yes|887
+10|4|Yukai|1659
+10|4|ZapMaster|740
+10|4|Zehnder|114,1334,1631,1777,394,504,818,1075,1232,1251,1412,1413
+10|4|Zenith|1856,856
+10|4|Zeta Technology|200
+10|4|Ziggo|1499,1657,2443
+10|4|Zodiac|396,1801
+10|4|i-Box|1652
+10|4|i-CAN|1367,2367
+10|4|iCan|1367
+10|4|iLo|1535
+10|4|iNETBOX|1652
+10|4|inVion|2418
+10|4|peeKTon|1659,1993,2418,1457
+10|4|tekComm|1017
+11|2|Philips|1582
+11|2|T-Home|2132
+11|2|UPC|1582
+11|4|@sat|1300
+11|4|Allvision|1412
+11|4|Amstrad|1175,1662,1693
+11|4|Atsat|1300
+11|4|B@ytronic|740,1412
+11|4|Bell ExpressVu|775,1170
+11|4|Boca|2308
+11|4|Boxer|1957
+11|4|British Sky Broadcasting|1175
+11|4|BskyB|1175,1662
+11|4|Bush|1645
+11|4|Canal Digitaal|2466
+11|4|Canal Digital|2553
+11|4|Canal Satellite|2657,1339
+11|4|Canal+|2657
+11|4|CanalSat|2657
+11|4|Comag|2308,1412
+11|4|Cyfra+|2593
+11|4|Cyfrowy Polsat|2527
+11|4|DMT|1075
+11|4|DigiQuest|1300
+11|4|Digifusion|1645,1929
+11|4|Digihome|2034
+11|4|Digital|2308
+11|4|Digiturk|1076,2097
+11|4|Dilog|1957
+11|4|DirecTV|1377,392,639,1142,1076,1442,99,1392,1640
+11|4|Dish Network|775,1505
+11|4|Dish Network System|1505,775
+11|4|Dishpro|775,1505
+11|4|Dream Multimedia|1237,1923
+11|4|Echostar|775,1505,1170,2527,610
+11|4|Edision|1631
+11|4|Eurosky|740
+11|4|Expressvu|775
+11|4|Finepass|1593
+11|4|Foxtel|1356
+11|4|Freesat+|2443
+11|4|GbSAT|1214
+11|4|Gecco|1412
+11|4|Globo|1412
+11|4|Golden Interstar|1572
+11|4|Goodmans|2034
+11|4|HDT|1159
+11|4|Handan|1957
+11|4|Hirschmann|740,1412
+11|4|Homecast|1680
+11|4|Hughes Network Systems|1142,1442
+11|4|Humax|1176,1427,1675,1808,2357,2443
+11|4|Huth|1075
+11|4|Hyundai|2463,1075,1159
+11|4|ID Sat|1334
+11|4|JVC|1170
+11|4|Kaon|1300
+11|4|Kathrein|658,1561,2569,249,1221
+11|4|LG|1075
+11|4|LaSAT|740
+11|4|Luxor|1935
+11|4|MTEC|1214
+11|4|Maximum|1334
+11|4|MediaSat|2107
+11|4|Mediacom|1206
+11|4|Medion|740,1412
+11|4|Meo|2466
+11|4|Microstar|1075
+11|4|Morgan's|1412
+11|4|Motorola|869
+11|4|Movistar|2527
+11|4|Multichoice|2059,2060,1333,1559,1560
+11|4|MySky|1693,1848,1850
+11|4|NEOTION|1334
+11|4|Neotion|1334
+11|4|Nokia|1023
+11|4|Nova|1959
+11|4|Omni|1993
+11|4|Opentel|1412
+11|4|Orbis|1412
+11|4|Pace|1175,1662,1682,1693,2059,2060,2097,2211,2466,2593,2657,1356,1423,1850
+11|4|Panasonic|1304
+11|4|Philips|1142,1442,99,2107,2466,2593
+11|4|Pilotime|1339
+11|4|Portugal Telecom|2466
+11|4|Proscan|392
+11|4|RCA|1392
+11|4|Radix|1317
+11|4|Rebox|1214
+11|4|SKY|1175,1358,1662,1693,1848,1850
+11|4|SKY Brazil|1358
+11|4|SKY Italia|1693,1848
+11|4|SKY New Zealand|2211
+11|4|SKY PerfecTV!|2299
+11|4|Sagem|1692,2553,1307
+11|4|Samsung|1442,1206,1609,1662,1682,1570
+11|4|Sansui|1545
+11|4|Sat Control|1300
+11|4|Schneider|1206
+11|4|Schwaiger|740,2308,1075,1412
+11|4|Sedea Electronique|1206
+11|4|Serd|1412
+11|4|Sharp|2034
+11|4|Siemens|1657
+11|4|SilverCrest|2308
+11|4|Sky XL|1412
+11|4|Sky+|1175,1662,740,1334
+11|4|Skymaster|1545,1075
+11|4|Skypex|740
+11|4|Skyplus|1412
+11|4|Sony|639,2299,1640
+11|4|Star Choice|869
+11|4|Stream System|1300
+11|4|Strong|1300
+11|4|Sunny|1300
+11|4|TNT SAT|1692
+11|4|TPS|1307
+11|4|Teac|1957
+11|4|TechniSat|1195,1197
+11|4|Technosat|1206
+11|4|Telefonica|2272,2527
+11|4|Telestar|1195,1197
+11|4|Tevion|1593
+11|4|Thomson|1175,1662,1935
+11|4|Tivo|1142,1442
+11|4|Topfield|1206,1545,1783,1824
+11|4|UEC|1358
+11|4|Vantage|2297
+11|4|Viasat|1195,1197,1682
+11|4|Wisi|740
+11|4|Xtreme|1300
+11|4|Yamada|1993
+11|4|Zehnder|1777,1075,1412
+11|5|DirecTV|739
+11|5|Hughes Network Systems|739
+11|5|Philips|739
+11|5|Samsung|739
+12|1|888|264
+12|1|A-Mark|47,54,9
+12|1|A.R. Systems|37,556,455,352,374
+12|1|ADL|1217
+12|1|AEG|1037,1163,1324,1556
+12|1|AOC|1365,1589,1590,2014,2087,93,178,9,108,625,2111,2214,451,180,60,30,92,628
+12|1|AR|556,352
+12|1|ART|1037
+12|1|ASA|70,105
+12|1|ATD|698
+12|1|AVP|0
+12|1|Accent|9,37
+12|1|Accuscan|47
+12|1|Acer|1339
+12|1|Acoustic Research|1269
+12|1|Acoustic Solutions|1523,1037,1667,1865
+12|1|Action|650,30
+12|1|Acura|9
+12|1|Addison|108,653,92
+12|1|Admiral|93,47,54,17,51,463,180,264,163,418
+12|1|Advent|761,815,783,817,842,1933
+12|1|Adventuri|0
+12|1|Agashi|264
+12|1|Agna|150
+12|1|Aiko|9,35,37,371,361,264,92
+12|1|Aim|706,37,455,753,805
+12|1|Aiwa|264,701,1904,1911,1916
+12|1|Akai|812,1675,702,672,1207,1935,2232,178,9,35,37,208,371,480,556,606,714,1308,1413,1865,0,60,30,145,548,361,264,218,729,745,753,1903,648,602,473,163,151
+12|1|Akashi|9,860
+12|1|Akiba|37,218,455
+12|1|Akira|418
+12|1|Akito|37
+12|1|Akura|171,9,37,668,714,1037,1363,1556,1585,1667,1770,1983,264,218,163,1498
+12|1|Alaron|170
+12|1|Alba|9,37,371,443,480,587,668,714,1037,1865,2104,487,370,218,73,163,352,418,1935
+12|1|Albatron|700,843
+12|1|Alfide|672
+12|1|Alien|1037
+12|1|All-Tel|865,1269
+12|1|Alleron|30,170
+12|1|Allstar|37
+12|1|Ambassador|150,177
+12|1|America Action|180
+12|1|American High|0,60
+12|1|Amitech|1849
+12|1|Amplivision|370
+12|1|Ampro|751
+12|1|Amstrad|171,9,37,371,1037,0,264,218,11,163,177,648
+12|1|Amtron|0,180
+12|1|Anam|250,9,37,180,628,700
+12|1|Anam National|250,37,650
+12|1|Andersson|1163,1585,1149
+12|1|Anglo|9,264
+12|1|Anhua|51
+12|1|Anitech|9,37,264
+12|1|Ansonic|9,37,668,370,163,374,411
+12|1|Aolinpike|264
+12|1|Aomni|1623
+12|1|Apex Digital|156,767,890,2397,1217,748,765,879,1943
+12|1|Apollo|473
+12|1|Arc En Ciel|109
+12|1|Ardem|37,714
+12|1|Arena|37
+12|1|Aristocrat|163
+12|1|Aristona|37,556
+12|1|Art Mito|1585
+12|1|Arthur Martin|163
+12|1|Asberg|37
+12|1|Asora|9
+12|1|Astar|1738
+12|1|Astra|37
+12|1|Asuka|264,218
+12|1|Atec|1606
+12|1|Atlantic|37
+12|1|Atori|9
+12|1|Auchan|163
+12|1|Audinac|180
+12|1|Audiosonic|1675,9,37,714,820,1308,1983,2104,486,264,370,218,109,374
+12|1|Audioton|486,264,370
+12|1|Audiovox|451,623,802,1937,180,92,875,1951,1952
+12|1|Audioworld|698
+12|1|Aumark|60
+12|1|Aventura|171
+12|1|Awa|9,108,606,888,451,264,11,374,1376
+12|1|Axion|1937,1958
+12|1|Axxent|9
+12|1|Axxon|714
+12|1|BBK|1523,1741
+12|1|BPL|37,208,896
+12|1|BSR|163
+12|1|BTC|218
+12|1|Baihe|9,264
+12|1|Baile|9,661,374
+12|1|Baird|208,343,37,73,109,1196
+12|1|Bang & Olufsen|565
+12|1|Baohuashi|264
+12|1|Baosheng|9,817
+12|1|Barco|556,163
+12|1|Basic Line|9,37,556,668,1037,1163,218,455,163,374
+12|1|Bauer|805
+12|1|Baur|37,195,512,361,455
+12|1|Baysonic|236,463,180
+12|1|Beaumark|178,17,30
+12|1|Beijing|812,9,208,226,661,264,374,817,821
+12|1|Beko|37,606,714,1652,195,1037,486,370,418,808
+12|1|Belcor|30
+12|1|Bell & Howell|54,17,154,93
+12|1|Belson|698,2032,1191
+12|1|Belstar|1037
+12|1|BenQ|1032,1562,1756
+12|1|Beon|37,218,163,418
+12|1|Berthen|668
+12|1|Best|370
+12|1|Bestar|37,370,374
+12|1|Bestar-Daewoo|374
+12|1|Black Diamond|587,820,1037,1163,1909,614,753,821
+12|1|Blackway|218
+12|1|Blaupunkt|195,455,170,200,327
+12|1|Blue Media|1606
+12|1|Blue Sky|37,556,625,668,714,1037,1363,1652,2153,487,218,455,499,1191,1254,1314,1916
+12|1|BlueH|1745
+12|1|Boca|1652
+12|1|Boman|1324
+12|1|Boots|9
+12|1|Bork|1363
+12|1|Boxlight|893
+12|1|Bradford|180
+12|1|Brandt|335,560,625,714,109,287
+12|1|Brinkmann|37,668,486,418
+12|1|Brionvega|37
+12|1|Brockwood|178,30
+12|1|Broksonic|1935,236,463,180,177,1911,1938
+12|1|Brother|264
+12|1|Bush|2214,2104,1983,1667,1652,1645,1556,1308,1037,714,698,668,661,587,556,443,371,208,37,9,487,361,264,218,614,374,335,163
+12|1|Byd:sign|2140,2209
+12|1|C-Tech|896,891
+12|1|CCE|37
+12|1|CGE|370,74,163,418
+12|1|CPTEC|625,1363
+12|1|CS Electronics|218
+12|1|CTX|1756
+12|1|CXC|180
+12|1|Caihong|9,817
+12|1|Cailing|748
+12|1|Caishi|891
+12|1|Cameron|1523
+12|1|Camper|37
+12|1|Candle|30
+12|1|Canton|218
+12|1|Capehart|17,178,30,92
+12|1|Capetronic|30
+12|1|Capsonic|264
+12|1|Carad|668,1037,610
+12|1|Carena|37,455
+12|1|Carnivale|30
+12|1|Carrefour|37,70
+12|1|Carver|54,170
+12|1|Cascade|9,37
+12|1|Casio|37
+12|1|Cathay|37,218
+12|1|Celebrity|0
+12|1|Celera|765
+12|1|Celestial|820,767,821
+12|1|Centrex|780,891
+12|1|Centrum|1037
+12|1|Centurion|37
+12|1|Changcheng|9,661,51,264,374,817
+12|1|Changfei|9,374,817
+12|1|Changfeng|264,753,817
+12|1|Changhai|9,817
+12|1|Changhong|156,9,508,820,765,264,767,783,817,821,1008,1156
+12|1|Chengdu|9,817
+12|1|Chimei|1852
+12|1|Ching Tai|9,92
+12|1|Chun Yun|0,706,9,1756,180,92,700,843
+12|1|Chunfeng|9,264
+12|1|Chung Hsin|53,108,180
+12|1|Chunsun|9,817
+12|1|Cimline|9,218
+12|1|Cinema|672
+12|1|Cineral|451,92
+12|1|Cinex|1556,648
+12|1|Citek|47
+12|1|Citizen|1672,1935,54,0,451,463,180,60,30,171,35,92
+12|1|City|9
+12|1|Clarion|180
+12|1|Clarivox|37,70,418
+12|1|Classic|30,92,499
+12|1|Clatronic|9,37,371,714,1324,264,370,218
+12|1|Clayton|1037
+12|1|Coby|1634,2306,2315,2345,2348,2350
+12|1|Colortyme|47,54,17,60,178,30
+12|1|Commercial Solutions|1447,47
+12|1|Concorde|9
+12|1|Condor|9,37,264,370,411,418
+12|1|Conia|1523,820,2032,754,821,1498
+12|1|Conic|178
+12|1|Conrac|808
+12|1|Conrowa|156,9,698,145,264,753,1156,1170
+12|1|Contec|9,37,180
+12|1|Continental Edison|487,109,287
+12|1|Cosmel|9,37
+12|1|Craig|180,171
+12|1|Crosley|0,54,180,30,171,370,74,163
+12|1|Crown|53,9,37,208,606,668,714,1037,1652,93,180,486,487,712,370,418,672
+12|1|Crown Mustang|672
+12|1|Curtis|2352
+12|1|Curtis Mathes|451,702,1661,1147,1347,93,47,54,154,0,51,180,60,178,30,145,166,37,466,35
+12|1|Cyberpix|1667
+12|1|Cybertron|218
+12|1|Cytron|1326
+12|1|Cytronix|1298
+12|1|D-Vision|37,556
+12|1|DEC|860,891
+12|1|DL|587,1363,780,872,891
+12|1|DMTech|2001
+12|1|DSE|698,820,888,1556
+12|1|DTS|9
+12|1|DVX|891
+12|1|DX Antenna|1817
+12|1|Daenyx|180,672
+12|1|Daewoo|451,1661,623,672,178,9,37,108,556,634,661,860,1606,1849,2098,154,180,30,1909,264,218,880,1755,865,700,1756,628,499,374,170,109,92
+12|1|Dainichi|218
+12|1|Dansai|9,35,37,208
+12|1|Dantax|714,1037,1163,1652,486,370
+12|1|Datsura|208
+12|1|Dawa|9,37
+12|1|Daytek|672,1376
+12|1|Dayton|9,92
+12|1|Daytron|9,37,180,178,30,92,374
+12|1|Dayu|661,374
+12|1|De Graaf|208,548,163
+12|1|Decca|37
+12|1|Degraff|163,208
+12|1|Deitron|374
+12|1|Dell|1264,1080,1178,1863
+12|1|Denko|264
+12|1|Denon|145,511
+12|1|Denstar|628
+12|1|Denver|37,587,1770,1189
+12|1|Desmet|9,37
+12|1|Dewo|628
+12|1|Diamant|37
+12|1|Diamond|706,9,371,698,820,860,896,672,825
+12|1|Dick Smith Electronics|698,1556
+12|1|Digatron|37
+12|1|Digihome|1667
+12|1|Digiline|37,668,105
+12|1|Digital Device|1606
+12|1|Digital Life|780,872,891
+12|1|Digital Lifestyles|1765
+12|1|Digitex|820
+12|1|Digitor|37,698,888
+12|1|Digix Media|880
+12|1|Disney|1665
+12|1|Dixi|9,37
+12|1|Domeos|668
+12|1|Domland|394
+12|1|Dongda|9
+12|1|Donghai|9
+12|1|Dream Vision|1704
+12|1|Drean|37
+12|1|Dual|37,343,1037,1163,2032,1137,352,394
+12|1|Dumont|17,180,178,70
+12|1|Durabrand|178,171,1037,1652,1665,463,180,1034,1463
+12|1|Dux|37
+12|1|Dwin|93,720,774
+12|1|Dynatron|37
+12|1|Dynex|1463,1780,1785,2049,2184
+12|1|E:max|1324
+12|1|ECE|37
+12|1|ELG|37
+12|1|ESA|812,171,1944,1963
+12|1|ESC|37
+12|1|Easy Living|1217,1308,1666,1783,2104,1248
+12|1|Eaton|60
+12|1|Ecco|773
+12|1|Edison-Minerva|487
+12|1|Elbe|37,556,610,218,411
+12|1|Elcit|163
+12|1|Electroband|0
+12|1|Electrograph|1755,1623
+12|1|Electrohome|1672,1670,154,0,463,150,178,30,73,151
+12|1|Elekta|9,264
+12|1|Elektra|17,1661
+12|1|Element|1687,2183,1886
+12|1|Elfunk|1037,1208
+12|1|Elin|9,37,548,361
+12|1|Elite|37,218
+12|1|Elta|9,264
+12|1|Emerald|178,177
+12|1|Emerson|1864,451,178,171,1661,623,1394,1944,1963,37,371,668,714,1665,47,17,154,236,463,180,150,195,1909,486,361,370,70,177,170,73,1911
+12|1|Emprex|1422,1765
+12|1|Envision|1365,1589,2014,2087,1506,30,813
+12|1|Enzer|860,753
+12|1|Epson|833,840
+12|1|Erres|37
+12|1|Ether|9,30
+12|1|Etron|9,820,163
+12|1|Eurofeel|264
+12|1|Euroman|37,264,370
+12|1|Europa|37
+12|1|Europhon|37,109
+12|1|Evesham|1248,1606,1667
+12|1|Evolution|1756
+12|1|Excello|1037
+12|1|Expert|163
+12|1|Exquisit|37
+12|1|Feilang|9
+12|1|Feilu|9,817
+12|1|Feiyan|264
+12|1|Feiyue|9,817
+12|1|Fenner|9,374
+12|1|Fer0|335
+12|1|Ferguson|53,37,195,335,343,443,560,625,1037,1585,548,73,109,287,1935
+12|1|Fidelity|171,37,371,512,361,264,163
+12|1|Finlandia|208,548,361,105,163,346
+12|1|Finlux|37,480,556,714,1248,1556,1667,70,105,163,346,411,473,808
+12|1|Firstar|9,236
+12|1|Firstline|9,37,208,556,668,714,1037,1308,1363,361,374,411,808,1191
+12|1|Fisher|208,47,54,154,0,361,370
+12|1|Flint|37,610,264,218,455
+12|1|Force|1149
+12|1|Formenti|37,163
+12|1|Fortress|93
+12|1|Fraba|37,370
+12|1|Friac|9,37,610,370,499
+12|1|Frontech|9,264,163
+12|1|Fujimaro|865,1498
+12|1|Fujitsu|809,683,9,352,853
+12|1|Fujitsu General|9,683
+12|1|Fujitsu Siemens|1163,1248,1298,1666,808,809
+12|1|Funai|0,171,1271,1963,668,714,1037,1394,1666,1817,2173,180,264,1904
+12|1|Furi|145,264,817
+12|1|Furichi|860
+12|1|Futronic|860,264
+12|1|Futuretech|180
+12|1|G-Hanz|1363
+12|1|GBC|9,218,163,374
+12|1|GE|1447,451,178,1347,2359,1454,93,335,560,625,47,0,51,180,60,30,1922,1917,1147,92,35
+12|1|GEC|37,361,163
+12|1|GFM|171,1963,1864,1665
+12|1|GPM|218
+12|1|GVA|1363
+12|1|Gaba|1037
+12|1|Galaxi|37
+12|1|Galaxis|37,370
+12|1|Ganxin|817
+12|1|Gateway|1755,1756
+12|1|Geloso|9,163,374
+12|1|Gemini|47
+12|1|General|109,287
+12|1|General Electric|47
+12|1|General Technic|9
+12|1|Genesis|9,37
+12|1|Genexxa|9,37,218,163
+12|1|Gericom|1217,1298,1606,808,865,880
+12|1|Giant|9
+12|1|Gibralter|17,0,30
+12|1|Go Video|60,886
+12|1|Go Vision|1937
+12|1|Gold|1770
+12|1|Gold Vision|661
+12|1|GoldStar|178,37,606,714,47,54,154,30,361,455,9,73,109,163,1154
+12|1|Goldfunk|668
+12|1|Gooding|487
+12|1|Goodmans|1983,1720,1667,1645,1308,1163,1037,714,668,661,634,625,560,556,480,371,343,335,37,35,9,0,1909,487,264,218,587,11,1376,880,808,499,374
+12|1|Gorenje|1585,1667
+12|1|Gradiente|53,37,170
+12|1|Graetz|371,714,1163,487,361,163
+12|1|Gran Prix|648
+12|1|Granada|37,108,208,226,343,560,548,163,473
+12|1|Grandin|9,37,556,668,714,1037,1298,610,218,455,163,374,865,880,1191
+12|1|Grundig|683,706,9,37,195,443,556,587,1223,1308,1667,2007,487,70,163,672,1376,1916,1935
+12|1|Grundy|180,195
+12|1|Grunkel|1163
+12|1|Grunpy|180
+12|1|H & B|2001,808
+12|1|HB|1324
+12|1|HCM|9,37,264,218,418
+12|1|HP|1494,1502
+12|1|Haaz|706
+12|1|Haier|1748,1749,2309,37,508,587,698,896,1983,768,891,1017,1034
+12|1|Haihong|9
+12|1|Haiyan|264,817
+12|1|Halifax|264
+12|1|Hallmark|178,236,180
+12|1|Hanimex|218
+12|1|Hankook|178,180,30,628
+12|1|Hanns.G|1783
+12|1|Hannspree|1348,1745,1783
+12|1|Hanseatic|9,37,556,625,634,661,714,2001,361,370,394,499,808
+12|1|Hantarex|9,37,865
+12|1|Hantor|37
+12|1|Harley Davidson|0,180,60,178,30,1904
+12|1|Harman/Kardon|54
+12|1|Harsper|865
+12|1|Harvard|180
+12|1|Harwa|773,1196,1269
+12|1|Harwood|9,37,487
+12|1|Hauppauge|37
+12|1|Havermy|93
+12|1|Heathkit|17
+12|1|Helios|865
+12|1|Hello Kitty|451
+12|1|Hema|9
+12|1|Heran|1852
+12|1|Hewlett Packard|1494,1502
+12|1|Hifivox|109
+12|1|Highline|37,264
+12|1|Hikona|1983,218
+12|1|Hikone|218
+12|1|Himitsu|180,628
+12|1|Hinari|9,37,208,443,264,218,163,352
+12|1|Hisawa|714,610,218,455
+12|1|Hisense|1314,1660,2098,2355,156,9,208,508,556,860,1363,2183,2341,748,145,1208,1170,1156,1022,821,780,753
+12|1|Hitachi|1643,1145,156,178,2433,2215,2214,2207,1691,1667,1585,1576,1163,1037,744,679,634,578,508,480,343,108,37,9,47,54,17,0,51,150,30,145,1256,548,1137,1225,1170,1156,1904,1149,1960,499,481,473,163,151,109,105,92,35
+12|1|Hitachi Fujian|108,860,150
+12|1|Hitec|698
+12|1|Hitsu|9,610,218,455
+12|1|Hoeher|714,1163,1556,865
+12|1|Home Electronics|606
+12|1|Hongmei|93,9,264,817
+12|1|Hongyan|264,817
+12|1|Hornyphon|37
+12|1|Hoshai|218,455
+12|1|Hua Tun|9
+12|1|Huafa|9,145
+12|1|Huanghaimei|9
+12|1|Huanghe|9,817
+12|1|Huanglong|9
+12|1|Huangshan|9,264,817
+12|1|Huanyu|264,374,817
+12|1|Huaqiang|264
+12|1|Huari|145,264
+12|1|Hugoson|1217,1666,890
+12|1|Humax|1539
+12|1|Huodateji|51
+12|1|Hyper|9
+12|1|Hypersonic|361
+12|1|Hypson|37,556,668,714,1037,486,264,455
+12|1|Hyundai|1523,706,698,860,888,1037,1556,1606,1770,2460,753,849,865,1376
+12|1|ICE|37,371,264,218
+12|1|ICeS|218
+12|1|IISonic|1376
+12|1|IRT|698,451,1661,628
+12|1|ITS|37,371,264,218
+12|1|ITT|1523,208,480,548,610,361,163,346,473
+12|1|ITT Nokia|208,480,606,180,548,195,610,361,70,163,346,473
+12|1|ITV|37,264,374
+12|1|Iberia|37
+12|1|Iiyama|1217,890
+12|1|Ima|236,180,178
+12|1|Imperial|37,370,74,418
+12|1|Imperial Crown|9,661,264,374
+12|1|Indiana|37
+12|1|Infinity|54
+12|1|Ingelen|714,610,487,163
+12|1|Ingersol|9
+12|1|Initial|1603,1990
+12|1|Inno Hit|9,1037,1163,1585,218
+12|1|Innova|37
+12|1|Innowert|1298,865
+12|1|Inotech|773,820
+12|1|Insignia|1423,1564,171,1517,1660,1780,1892,1963,2049,1785,1326
+12|1|Inspira|1556
+12|1|Inteq|17,145
+12|1|Interbuy|9,37,264
+12|1|Interfunk|37,512,361,109,163,200,327
+12|1|Internal|556,37,1909
+12|1|Intervision|9,37,486,487,264,218,455,394
+12|1|Irradio|9,37,371,218
+12|1|Isukai|37,218,455
+12|1|JBL|54
+12|1|JCB|0
+12|1|JCM|2256
+12|1|JEC|35
+12|1|JIL|30
+12|1|JMB|443,556,634,499
+12|1|JNC|896
+12|1|JTV|860
+12|1|JVC|650,731,1253,1601,1774,2271,93,53,371,508,606,653,1172,1428,54,463,30,218,70,418,683,1923
+12|1|Jean|156,9,51,236,92
+12|1|Jensen|761,815,817,1933
+12|1|JiaLiCai|9,264
+12|1|Jiahua|51
+12|1|Jinfeng|208,226,51,817
+12|1|Jinque|9,264,817
+12|1|Jinta|9,264
+12|1|Jinxing|156,9,37,556,698,54,145,264,817,821,1011
+12|1|Jocel|712
+12|1|Johnson|455
+12|1|Jubilee|556
+12|1|Juhua|264,817
+12|1|Jutan|30
+12|1|KB Aristocrat|163
+12|1|KDS|1498,1687
+12|1|KEC|180,60
+12|1|KLH|767,156,180,765,1962
+12|1|KLL|37
+12|1|KTV|463,180,30
+12|1|Kaige|9,264,817
+12|1|Kaisui|9,37,218,455
+12|1|Kamp|17,180
+12|1|Kanghua|896
+12|1|Kangli|9,661,264,374,817
+12|1|Kangyi|9,264
+12|1|Kapsch|361,163
+12|1|Karcher|606,714,1308,1324,1556,610,264,370
+12|1|Kathrein|556
+12|1|Kawa|371
+12|1|Kawasho|30
+12|1|Ken Brown|1321,236,463
+12|1|Kendo|37,1037,1585,610,370,411,648
+12|1|Kenia|30
+12|1|Kennedy|163
+12|1|Kennex|1037,668
+12|1|Kenwood|180,30
+12|1|Khind|706,661,896
+12|1|Kiota|371,455
+12|1|Kioto|706,556,54
+12|1|Kiton|37,668
+12|1|Kloss|30
+12|1|Kneissel|37,556,610,370,374,411,499
+12|1|Koenig|37
+12|1|Kolin|1610,1755,53,37,108,1217,1240,1331,180,150
+12|1|Kolster|37,218
+12|1|Kongque|9,264,817
+12|1|Konichi|9
+12|1|Konig|37
+12|1|Konka|9,37,371,587,714,180,218,418,628,632,638,703,707,720,754,817,1084
+12|1|Kontakt|487
+12|1|Korpel|37
+12|1|Korting|370
+12|1|Kosmos|37
+12|1|Kost|1262
+12|1|Koyoda|9
+12|1|Kuaile|9,264
+12|1|Kulun|9
+12|1|Kunlun|208,226,661,51,264,374,817
+12|1|Kyoshu|418
+12|1|Kyoto|163
+12|1|L&S Electronic|714,808,865
+12|1|LG|1423,1265,178,856,1178,1768,2358,2424,1447,9,37,108,556,698,714,1305,1663,2182,2362,54,60,30,361,370,1758,1637,1191,1154,700,163,109
+12|1|LXI|156,178,47,54,17,154,0,51,93,60,53,30,171,166,37,35,208
+12|1|LaSAT|486
+12|1|Lark|154
+12|1|Lavic|1363
+12|1|Lavis|1037
+12|1|Leader|9
+12|1|Lecson|37
+12|1|Legend|9
+12|1|Lemair|411
+12|1|Lenco|37,587,1037,1983,374
+12|1|Lenoir|9
+12|1|Lexsor|1196
+12|1|Leyco|37,264
+12|1|Liesenk & Tter|37
+12|1|Liesenkoetter|37
+12|1|Liesenkotter|37,327
+12|1|Lifetec|9,37,668,714,1037,2001,1137,218,374
+12|1|Lihua|817
+12|1|Lloyd's|9,236,180,30,1904
+12|1|Local Chennai TV|9
+12|1|Local India TV|9,208,371,1413,264,602
+12|1|Local Malaysia TV|698
+12|1|Lodos|1037
+12|1|Loewe|37,512,633,1884,370,790
+12|1|Logik|9,371,698,773,1037,1217,1865,236,180,60,11,880
+12|1|Logix|668
+12|1|Longjiang|264,817
+12|1|Luma|9,1037,163,374,411
+12|1|Lumatron|37,556,361,264,73,163
+12|1|Lux May|9,37
+12|1|Luxor|208,480,1037,1163,548,361,163,346,473
+12|1|M & S|54
+12|1|M Electronic|9,37,195,343,480,512,634,661,714,1652,105,109,163,287,346,374,411
+12|1|MAG|1498,1687
+12|1|MCE|9
+12|1|MEI|1037
+12|1|MGA|150,178,30,218,374
+12|1|MGN Technology|178
+12|1|MTC|512,180,60,30,370,11,92
+12|1|MTlogic|714
+12|1|Madison|37
+12|1|Magnadyne|54,163
+12|1|Magnafon|73
+12|1|Magnasonic|54,0,156,93,30,92,109
+12|1|Magnavox|1454,1866,706,802,1254,1365,1525,1944,1963,1990,2372,1755,171,35,1506,1867,47,54,154,0,250,51,180,60,30,37,92,11,729,780,1904
+12|1|Magnum|37,714,1556,648,1289
+12|1|Majestic|17
+12|1|Mandor|264
+12|1|Manesth|35,37,264
+12|1|Manhattan|37,668,1037
+12|1|Maqma|1606
+12|1|Marantz|1454,704,855,1154,2445,37,556,54,30
+12|1|Mark|9,37,714,374
+12|1|Marks and Spencer|1770
+12|1|Mascom|1556
+12|1|Master's|499
+12|1|Mastro|53,706,698,1556,780
+12|1|Masuda|9,37,371,264,218
+12|1|Matsui|9,35,37,195,208,335,371,443,556,714,744,1037,1666,1667,2007,487,455,1916,352,177,163,11
+12|1|Matsushita|250,650,51
+12|1|Matsuviama|587
+12|1|Maxdorf|773,1276
+12|1|Maxent|1755,762,1756
+12|1|Maxim|1556
+12|1|Meck|698,891
+12|1|Mediator|37,556
+12|1|Medion|37,512,556,668,698,714,1037,1248,1556,1585,1667,1741,2001,1137,808,880
+12|1|Megapower|700
+12|1|Megas|610
+12|1|Megatron|178,47,145,9,151
+12|1|Meile|264,817
+12|1|Memorex|150,178,1892,250,9,1037,1665,1670,154,463,180,60,30,37,195,35,1911
+12|1|Memory|1983
+12|1|Memphis|9
+12|1|Mercury|9,37,60
+12|1|Mermaid|37
+12|1|Metronic|625
+12|1|Metz|37,195,587,668,1163,1533,388,447,746
+12|1|Micro Genius|150
+12|1|MicroTEK|820,860
+12|1|Micromaxx|37,668,714,1037,1324,2001,808
+12|1|Microstar|808
+12|1|Microtek|820,860
+12|1|Midland|47,17,51
+12|1|Mikomi|744,1037,1308,1585,1149
+12|1|Minato|37,556
+12|1|Minerva|108,195,1248,487,70
+12|1|Ministry Of Sound|1667
+12|1|Minoka|37
+12|1|Mintek|1603,1990
+12|1|Mirai|1666,1852
+12|1|Mitsai|1556
+12|1|Mitsubishi|1250,150,178,836,868,250,93,37,108,512,556,1037,1171,2313,154,236,180,30,195,1917,817,11
+12|1|Mivar|609
+12|1|Monaco|9
+12|1|Monivision|700,843
+12|1|Moree|37
+12|1|Morgan's|37
+12|1|Motorola|93,54,51,150
+12|1|Mudan|9,208,226,51,264,817
+12|1|Multitec|37,668,1037,1556,486
+12|1|Multitech|9,37,180,486,264,370
+12|1|Murphy|163
+12|1|Musikland|218
+12|1|Mx Onda|1983,1498
+12|1|Myrica|1666
+12|1|Myryad|556
+12|1|NAD|156,178,866,1156,37,166,361
+12|1|NAT|226
+12|1|NEC|704,882,1704,1797,156,53,178,9,508,653,661,1852,2461,47,154,51,30,264,455,817,1170,603,499,497,374,170,11
+12|1|NEI|37,371,1037,163
+12|1|NEO|1324
+12|1|NTC|92
+12|1|Naiko|37,606
+12|1|Nakimura|37,374
+12|1|Nanbao|9,264
+12|1|Nansheng|264,817
+12|1|National|208,226,508,1097,51
+12|1|Neckermann|37,556,370,200,327,411,418
+12|1|Neovia|865,1376
+12|1|NetTV|1755,762
+12|1|Netsat|37
+12|1|Neufunk|9,37,556,714,610,218
+12|1|New Tech|9,37,343,556
+12|1|New World|218
+12|1|Newave|93,178,9,92
+12|1|Nexus Electronics|2183
+12|1|Nikai|1163
+12|1|Nikkai|9,35,37,264,218,163
+12|1|Nikkei|714
+12|1|Nikko|178,30,92
+12|1|Nikkodo|178,30,92
+12|1|Nimbro|2104
+12|1|Nintaus|891
+12|1|Nishi|30
+12|1|Noblex|37,154,264
+12|1|Nobliko|70
+12|1|Nogamatic|109
+12|1|Nokia|208,480,606,180,548,610,361,163,346,374,473
+12|1|Norcent|824,1365,1589,1590,2110,748
+12|1|Nordmende|37,195,343,560,714,1163,1413,1585,1667,2001,2007,109,287,891
+12|1|Normerel|37
+12|1|Nortek|668
+12|1|Novatronic|37,105,374
+12|1|Novex|1523
+12|1|Novita|1585
+12|1|Nu-Tec|698,820,455
+12|1|NuVision|2158
+12|1|Nyon|0
+12|1|O.K.Line|1037,1324
+12|1|Oceanic|208,548,361,163,473
+12|1|Odeon|264
+12|1|Okano|9,37,264,370
+12|1|Olevia|1610,1144,1240,1331,2124
+12|1|Olidata|1376
+12|1|Omega|264
+12|1|Omni|698,748,780,872,891
+12|1|Onei|1667
+12|1|Onida|53,653,1253
+12|1|Onimax|714
+12|1|Onix|698
+12|1|Onn|1667,1770
+12|1|Onwa|371,180,218,602
+12|1|Onyx|1770
+12|1|Opera|37,714,1308,1770
+12|1|Optimus|250,650,154,93,180,150,178,30,166
+12|1|Optoma|1348,887
+12|1|Optonica|93
+12|1|Orbit|37
+12|1|Orion|1463,37,443,556,714,1037,2001,2007,2032,17,236,463,180,178,264,1916,1911,1196,880,177,11
+12|1|Orline|37,218
+12|1|Ormond|668,1037
+12|1|Osaki|37,556,264,218,374
+12|1|Osio|37
+12|1|Oso|218
+12|1|Osume|37,218
+12|1|Otic|1983,1498
+12|1|Otto Versand|93,37,195,226,343,512,556,361,109
+12|1|PARK|2104
+12|1|PCE|156,60
+12|1|Pace|92
+12|1|Pacific|443,556,714,1037,1324,37,1137,1935
+12|1|Packard Bell|92,1314
+12|1|Palladium|37,556,714,370,1137,163,200,327,411,418
+12|1|Palsonic|37,698,773,2461,264,218,418,1196,1269,1904
+12|1|Panama|9,37,264
+12|1|Panasonic|1480,250,1457,650,1271,1291,1410,1946,37,108,208,226,508,896,1097,1168,1636,1650,2170,54,0,156,51,236,30,548,361,163,35,853,1941,1947
+12|1|Panavision|37,411
+12|1|Panda|706,9,208,226,508,698,51,264,780,817,821,891
+12|1|Pathe Cinema|163
+12|1|Pathe Marconi|109
+12|1|Pausa|9
+12|1|Paxonic|60,30
+12|1|Peng Sheng|891
+12|1|Penney|156,178,1347,47,0,250,51,60,30,37,108,35,70
+12|1|Perdio|37,163
+12|1|Perfekt|37
+12|1|Petters|1523,37
+12|1|Philco|171,1271,1394,1963,178,37,1029,1665,54,451,463,180,30,145,1661,370,163,92,74,418,628,774,1911
+12|1|Philips|1454,1866,690,1154,1744,1867,1961,2372,2374,810,0,178,9,37,108,343,512,556,1394,1506,1756,54,17,51,30,171,361,1254,774,374,200,92
+12|1|Phocus|714,1308,1652,1289
+12|1|Phoenix|37,486,370,163
+12|1|Phonola|37,556
+12|1|Pilot|706,51,60,178,30,712,11
+12|1|Pioneer|1457,679,866,1260,37,512,698,1636,166,486,361,370,11,109,163,170,287,760
+12|1|Pionier|1556,486,370
+12|1|Plantron|9,37,264
+12|1|Playsonic|37,714,1652
+12|1|Plustron|1770
+12|1|Polaroid|1523,1276,1314,1498,1687,1766,2120,2121,2425,1645,1720,1741,765,865,1262,1316,1326,1327,1328,1341
+12|1|Polyvision|1144
+12|1|Poppy|9
+12|1|Portland|451,1661,92,374
+12|1|Powerpoint|37,698,1770,487
+12|1|Prandoni-Prince|361
+12|1|Precision|236,180,177
+12|1|Premier|9,264
+12|1|President|860
+12|1|Prima|761,815,1785,9,264,753,783,817,1269,1933
+12|1|PrimeView|1606
+12|1|Princess|773
+12|1|Princeton|700,717
+12|1|Prinston|1037
+12|1|Prinz|361
+12|1|Prism|250,51
+12|1|ProVision|37,556,714,1324,1037
+12|1|Profex|9,361,163
+12|1|Profi|9
+12|1|Profilo|1556
+12|1|Profitronic|37
+12|1|Proline|37,625,634,1037,73,411,1376
+12|1|Proscan|1447,1347,2147,2256,47,466,1922
+12|1|Prosco|156
+12|1|Prosonic|37,371,606,668,714,1308,1324,1585,1667,1770,1849,1865,2001,370,374
+12|1|Protec|37,264,9
+12|1|Protech|9,37,668,1037,486,264,418
+12|1|Proton|178,9,30,466
+12|1|Proview|1498,1687
+12|1|Pulsar|17,92
+12|1|Pulser|178,92
+12|1|Pvision|2001,1191
+12|1|Pye|37,556,374
+12|1|Pymi|9
+12|1|Qingdao|208,226,51,264,817
+12|1|Quadral|51,218
+12|1|Quartz|150,178
+12|1|Quasar|250,650,9,51,35,865
+12|1|Quelle|37,195,512,668,1037,361,11,70,74,109,200,327
+12|1|R-Line|37
+12|1|RBM|70
+12|1|RCA|1547,1447,679,1047,1147,1247,1347,1781,2187,2247,2434,0,1454,93,178,560,618,625,2403,2429,47,54,51,60,30,1953,1958,1948,1922,1917,774,753,92,90
+12|1|RFT|37,264
+12|1|Rabbit|47
+12|1|Radialva|218,163
+12|1|RadioShack|178,37,47,154,180,150,30,1904
+12|1|Radiola|37,556
+12|1|Radiomarelli|37
+12|1|Radiotone|9,37,668,1037,264,370,418,648
+12|1|Rank|70
+12|1|Rank Arena|602,753
+12|1|Realistic|178,47,154,180,150,30
+12|1|Recco|706
+12|1|Recor|37,418
+12|1|Rectiligne|37
+12|1|Rediffusion|548,361,163,346
+12|1|Redstar|37
+12|1|Reflex|37,668,1037
+12|1|Relisys|1585,1645,1741,865,1298
+12|1|Remotec|250,93,171,37,145
+12|1|Reoc|714
+12|1|RevolutionHD|1623
+12|1|Revox|37
+12|1|Rex|264,163,411
+12|1|Rinex|773
+12|1|Roadstar|9,37,668,714,1037,264,218,418,1189
+12|1|Rolson|2098
+12|1|Rowa|9,37,587,698,748,712,264,817
+12|1|Royal|825
+12|1|Royal Lux|335,370
+12|1|Runco|603,1629,17,60,30,497
+12|1|Ruyi|817
+12|1|S-Media|1217
+12|1|SBR|37,556
+12|1|SEG|9,37,668,1037,1163,487,264,218
+12|1|SEI|37,163,177
+12|1|SKY|37,1606,1745,880
+12|1|SLX|668
+12|1|SR2000|154,171
+12|1|SSS|180
+12|1|SV2000|54
+12|1|SVA|1963,587,748,768,865,870,871,872
+12|1|Saba|250,335,343,560,625,714,548,361,109,163,287,498
+12|1|Sagem|618,610,455,830
+12|1|Saige|9,817
+12|1|Saisho|9,264,11,163,177
+12|1|Saivod|37,668,1037,1163,1556,712
+12|1|Sakai|163
+12|1|Sakyno|455
+12|1|Salora|208,480,1556,548,361,163
+12|1|Salsa|335
+12|1|Sampo|1755,93,178,171,9,650,762,47,154,30,92,700,1756
+12|1|Samsung|812,702,178,650,766,814,1060,2051,156,93,1630,1619,1458,1312,1249,618,587,556,226,208,37,9,47,54,17,154,60,30,264,370,817,821,1235,1903,1959,774,371,163,92,90,35
+12|1|Sanjian|264
+12|1|Sanky|60,30
+12|1|Sansei|451,92
+12|1|Sansui|171,1892,1935,706,37,371,714,888,1236,1248,1413,1556,1670,2001,463,60,30,455,602,729,753,1904,1911
+12|1|Santon|9
+12|1|Sanyo|799,893,1142,156,9,108,208,508,1037,1179,1276,1585,1649,1667,2461,47,54,154,0,463,180,145,171,37,264,370,1154,1755,1208,704,170,163,105,88,11
+12|1|Sanyong|37
+12|1|Sanyuan|93,9,817
+12|1|Saville|60
+12|1|Sceptre|878,1360,1599,1217
+12|1|Schaub Lorenz|606,714,1324,1667,2001,548,486,361,374,1191
+12|1|Schneider|37,343,371,556,668,714,1037,361,1137,218,70,163,352,394,648,1904
+12|1|Schoentech|1037
+12|1|Scotch|178
+12|1|Scotland|163
+12|1|Scott|178,1711,1983,236,180,30,177,1189
+12|1|Sears|156,178,171,47,54,17,154,0,51,93,60,53,30,166,37,35,208,1904
+12|1|Seaway|634
+12|1|Seelver|1037
+12|1|Sei-Sinudyne|37
+12|1|Seleco|371,264,163,346,411
+12|1|Semivox|236,463,180
+12|1|Semp|156,1743,1356
+12|1|Sencora|9
+12|1|Sentra|35
+12|1|Serie Dorada|156,178,180,30
+12|1|Serino|93,610,455
+12|1|Shancha|264,817
+12|1|Shanghai|9,208,226,264,817
+12|1|Shaofeng|145,817
+12|1|Sharp|818,491,688,851,93,53,9,650,653,1165,1393,1659,2214,54,180,30,668,1193,1917,720,689,200
+12|1|Shen Ying|9,92
+12|1|Shencai|9,145,264
+12|1|Sheng Chia|93,9,236
+12|1|Shenyang|9,264,753,817
+12|1|Sherwood|1399,9
+12|1|Shinelco|2104
+12|1|Shintoshi|37
+12|1|Shivaki|178,37,443,556,374
+12|1|Show|9,418
+12|1|Siam|37
+12|1|Siarem|163
+12|1|Siemens|37,195,145,200,327
+12|1|Siera|37,556
+12|1|Siesta|370
+12|1|Signature|47,93,30
+12|1|Signet|1262
+12|1|Silva|37,361,648
+12|1|Silva Schneider|37,1556
+12|1|Silvano|587
+12|1|Silver|361,455
+12|1|SilverCrest|1037
+12|1|Simpson|178,30,11
+12|1|Singer|9,37,335,371,1556,60,92,891
+12|1|Sinotec|773
+12|1|Sinudyne|37,361,163,177
+12|1|Skantic|163
+12|1|Sky Brazil|880
+12|1|Sky-North|37
+12|1|Skygiant|180
+12|1|Skysonic|753
+12|1|Skyworth|9,37,698,748,264,753,805,817,825,1115
+12|1|Sliding|1324,865,880
+12|1|Smaragd|487
+12|1|Soemtron|1298,865
+12|1|Sogo|606
+12|1|Solar Drape|0
+12|1|Solavox|37,548,361,163
+12|1|Sole|1623,813
+12|1|Sonawa|218
+12|1|Songba|9
+12|1|Soniko|37
+12|1|Sonitron|208,370
+12|1|Sonix|1376
+12|1|Sonneclair|37
+12|1|Sonoko|9,37,264
+12|1|Sonolor|208,548,361,163
+12|1|Sontec|9,37,370
+12|1|Sontech|1983
+12|1|Sony|810,0,834,1685,650,1167,1505,1651,1825,17,154,1100,150,53,37,1904,1751,1317,632,74,11
+12|1|Sound & Vision|218,374
+12|1|Soundesign|178,180
+12|1|Soundwave|37,1037,418
+12|1|Sova|1952
+12|1|Sowa|156,178,226,51,60,92
+12|1|Soyea|773
+12|1|Soyo|1520,1826
+12|1|Spectra|9
+12|1|Spectravision|156,178
+12|1|Spectroniq|1498,1687
+12|1|Squareview|171
+12|1|Ssangyong|9
+12|1|Staksonic|9
+12|1|Standard|9,37,1037,218,374
+12|1|Standard Components|218,9
+12|1|Starlite|9,37,236,180,264,163
+12|1|Stenway|218
+12|1|Stern|264,163,411
+12|1|Strato|9,37,2032,264
+12|1|Strong|1163,1149
+12|1|Studio Experience|843
+12|1|SunBrite|1420,2337
+12|1|Sungoo|1248
+12|1|Sunkai|610,487,218,455,865
+12|1|Sunny|37
+12|1|Sunstar|9,37,371,264
+12|1|Sunstech|2001
+12|1|Sunwatt|455
+12|1|Sunwood|37
+12|1|SuperTech|9,37,556,218
+12|1|Superscan|864,1944,93
+12|1|Supersonic|9,208,455,805,1189
+12|1|Supra|178,9,374
+12|1|Supreme|0
+12|1|Susumu|335,218,287
+12|1|Sutron|9
+12|1|Svasa|208,455
+12|1|Swedx|1606
+12|1|Swisstec|1606,1745,1849,2104,2106,880
+12|1|Sylvania|1864,171,1271,1314,1394,1886,1944,1963,587,1665,47,54,154,0,51,178,30,37,92,1904
+12|1|Symphonic|171,1944,1394,0,180,178,1904
+12|1|Synco|0,1755,93,178,451,60,92
+12|1|Syntax|1610,1144,1240,1331
+12|1|Sysline|37
+12|1|T+A|447
+12|1|TCL|706,698,2403,2429,1027
+12|1|TCM|714,1308,2001,808,1289
+12|1|TELE System|1585
+12|1|TMK|178,236,180,177
+12|1|TML|1756
+12|1|TNCi|17
+12|1|TRANS-continents|37,556,668,1037,865
+12|1|TVS|463
+12|1|TVTEXT 95|556
+12|1|Tacico|178,9,92
+12|1|Tai Yi|9
+12|1|Taishan|9,374,817
+12|1|Talent|178
+12|1|Tandberg|361,109
+12|1|Tandy|93,218,163
+12|1|Tashiko|650,92,163,170
+12|1|Tatung|1756,156,9,37,1248,1324,1556,1720,54,154,0,51,60,11,1156,1191,1254
+12|1|Teac|1755,178,171,706,2032,1983,1770,1645,1363,1248,1037,714,698,668,587,512,37,9,154,1909,712,264,455,418,689,170,1149,1904
+12|1|Tec|9,37,335,163
+12|1|Tech Line|37,668,1163
+12|1|Tech Lux|1189
+12|1|Techica|218
+12|1|TechniSat|556
+12|1|Technica|1037
+12|1|Technics|250,556,650,54,51,226
+12|1|Technika|1667,1849,1865,1983,2032,2106
+12|1|Technisson|714,1652,1289
+12|1|Techno|1585
+12|1|Technosonic|556,625,1324,2032,499
+12|1|Technovox|30
+12|1|Techview|847
+12|1|Techvision|2032
+12|1|Techwood|1037,1163,1667,250,51,60
+12|1|Tecnimagen|556
+12|1|Teco|1523,93,53,178,9,653,762,1097,1838,51,264,218,92,1040
+12|1|Tedelex|9,208,606,698,418,891
+12|1|Teiron|9
+12|1|Tek|820
+12|1|Teknika|150,54,463,180,60,178,92
+12|1|Teleavia|343,287
+12|1|Telecolor|17
+12|1|Telecor|37,218,163,394
+12|1|Telefunken|702,37,335,343,560,587,625,698,714,820,896,1556,1585,486,712,498,346,287,109,74,73,753,754,821
+12|1|Telefusion|37
+12|1|Telegazi|37,264,218,163
+12|1|Telemeister|37
+12|1|Telesonic|37
+12|1|Telestar|9,37,556
+12|1|Teletech|9,37,668,1037
+12|1|Televideon|163
+12|1|Teleview|37
+12|1|Tempest|9,264,455
+12|1|Tennessee|37
+12|1|Tensai|9,37,371,1037,218,105,374
+12|1|Tenson|9
+12|1|Tera|30,92,466
+12|1|Tesla|37,556,714,1037,1652
+12|1|Tevion|37,556,668,714,1037,1248,1298,1556,1585,1645,1667,2032,1137,648,767,808,1289,1498
+12|1|Texet|9,218,374
+12|1|Texla|780
+12|1|ThemeScene|887
+12|1|Thomas|47,178,1904
+12|1|Thomson|1447,37,335,343,560,625,47,109,287
+12|1|Thorn|35,37,335,343,512,361,264,73,74,109,163,499
+12|1|Thorn-Ferguson|335,343,73,499
+12|1|Tiane|93,817
+12|1|Tiny|1269
+12|1|Tobishi|218
+12|1|Tobo|9,748,264
+12|1|Tocom|156
+12|1|Tokai|9,37,668,1037,163,374
+12|1|Tokaido|1037
+12|1|Tokyo|35
+12|1|Tomashi|218
+12|1|Tongguang|264
+12|1|Tongtel|587,780
+12|1|Tophouse|180,672
+12|1|Topline|668,1037
+12|1|Toshiba|1524,156,1256,1265,650,832,845,1156,1356,1656,1704,1935,1945,2006,93,2311,2203,1743,1556,1508,1291,1173,1169,1037,618,508,195,35,9,154,150,60,1145,145,166,264,1289,1971,1163,821,109,70,11
+12|1|Tosumi|1770
+12|1|Totevision|51
+12|1|Toyoda|9,371,264
+12|1|Toyomenka|178
+12|1|Trakton|264
+12|1|Trans Continens|37,668,1037
+12|1|Transonic|9,37,512,587,698,1363,712,264,455,418,780
+12|1|Triad|556,218
+12|1|Trio|1248,1498
+12|1|Tristar|264,218
+12|1|Triumph|37,556,177,346
+12|1|TruTech|1665
+12|1|Truetone|250,51
+12|1|Tuntex|9,30,92
+12|1|UMC|1606,1745,1849,2106
+12|1|Uher|37,480,486,370,374,418
+12|1|Ultra|92
+12|1|Ultravox|37,163,374
+12|1|Unic Line|37,455,473
+12|1|Uniden|2122
+12|1|United|37,556,587,714,1037,1652,1770,1983,1916
+12|1|Universal|37,714,47
+12|1|Universum|9,37,195,480,512,618,668,1037,1163,361,264,370,473,418,411,346,327,200,177,170,109,105,74,70,11
+12|1|Univox|37,163
+12|1|V|864,885,1755,1756
+12|1|V2max|865
+12|1|V7 Videoseven|1755,1217,1666,880,1376
+12|1|VU|2098
+12|1|Vector Research|30
+12|1|Venturer|1865
+12|1|Vestel|37,668,1037,1163,1585,1667
+12|1|Vexa|9,37
+12|1|Victor|250,53,650,653,1428
+12|1|VideoSystem|37
+12|1|Videocon|37,508,805
+12|1|Videologic|218
+12|1|Videologique|218
+12|1|Videomac|9
+12|1|Videotechnic|374
+12|1|Videoton|163
+12|1|Vidikron|1629,54
+12|1|Vidtech|178
+12|1|Viewsonic|1755,857,864,885,1330,1578,1627,1640,1742,2014,2087,1365,1745,2111,2277
+12|1|Viking|60
+12|1|Viore|1207,1684,2104,2352
+12|1|Vision|37,264
+12|1|Vistron|1363
+12|1|Visual Innovations|2106
+12|1|Vito|1852
+12|1|Vivax|1308
+12|1|Vivid|1308
+12|1|Vizio|1758,864,885,1756,2209,1755
+12|1|Vortec|37
+12|1|Voxson|178,37,163,418
+12|1|Vue|1236
+12|1|Walker|1667
+12|1|Waltham|37,443,668,1037,109,418
+12|1|Wansa|2098
+12|1|Wards|178,866,1156,0,156,47,54,17,154,51,93,236,180,60,30,166,37,195,151,35,1147,1347
+12|1|Warumaia|661,374
+12|1|Watson|9,37,668,714,1037,218,163,394,1376
+12|1|Watt Radio|163
+12|1|Waycon|156
+12|1|Wega|37
+12|1|Wegavox|9
+12|1|Weipai|9
+12|1|Welltech|714,1652
+12|1|Welton|178
+12|1|Weltstar|1037
+12|1|Westinghouse|1712,451,885,889,890,1282,1300,1577,2293,1755,1217,0
+12|1|Wharfedale|37,556,860,896,1324,1556,1667,1983,891
+12|1|White Westinghouse|1661,623,37,451,236,463,1909,889
+12|1|Wilson|556
+12|1|Windsor|668,1037
+12|1|Windy Sam|556
+12|1|Wintel|714
+12|1|World|451,236,463,180
+12|1|World-of-Vision|1217,1298,1606,2001,865,880,890,1289
+12|1|Worldview|455
+12|1|Wyse|1365
+12|1|X-View|1191
+12|1|XLogic|698,860
+12|1|XR-1000|154,180,171
+12|1|Xenius|634,661
+12|1|Xiahua|9,698,773,264,817
+12|1|Xianghai|9
+12|1|Xiangyang|264
+12|1|Xiangyu|9
+12|1|Xihu|264,817
+12|1|Xingfu|9
+12|1|Xinghai|264
+12|1|Xiron|1983
+12|1|Xoceco|1064
+12|1|Xomax|1770
+12|1|Xoro|1217,1196
+12|1|Xrypton|37
+12|1|YU-MA-TU|37
+12|1|Yamaha|769,833,839,650,1576,30
+12|1|Yamishi|37,218,455
+12|1|Yapshe|250
+12|1|Yingge|9
+12|1|Yokan|37
+12|1|Yoko|9,37,264,370,218
+12|1|Yonggu|9
+12|1|Yorx|30,218
+12|1|Youlanasi|817
+12|1|Yousida|9
+12|1|Yuhang|9
+12|1|Zanussi|264,163
+12|1|Zenith|0,1423,1265,178,1145,1661,37,1305,1365,47,17,93,463,812,30,145,171,1909,92,1904,1911
+12|1|Zepto|1585
+12|1|ZhuHai|9,374
+12|1|Zonda|698
+12|1|cello|1770
+12|1|iDEAL|1556
+12|1|iLo|1603,1684,1990,1394,1665
+13|1|Acoustic Solutions|1865
+13|1|Advent|1933
+13|1|Akai|1675,1935,2232,1865
+13|1|Akura|1770,1983
+13|1|Alba|587,2104,1037,1935
+13|1|Apex Digital|1943
+13|1|Audiosonic|1983,2104
+13|1|Audiovox|1937,1951,1952
+13|1|Axion|1937,1958
+13|1|Black Diamond|1037
+13|1|Blue Sky|1037,2153
+13|1|Broksonic|1935
+13|1|Bush|587,698,1037,1556,1983,2104
+13|1|Centrum|1037
+13|1|Citizen|1935
+13|1|Coby|2315,2350
+13|1|Crown|1037
+13|1|DMTech|2001
+13|1|Denver|587,1770
+13|1|Dual|1037
+13|1|Dynex|2049,2184
+13|1|ESA|1963
+13|1|Easy Living|2104
+13|1|Electrohome|1670
+13|1|Elfunk|1037
+13|1|Emerson|1864,1394,1963
+13|1|Ferguson|1037,1935
+13|1|Finlux|1556
+13|1|Funai|1963
+13|1|GFM|1963
+13|1|Gold|1770
+13|1|Goodmans|1037,1983,587
+13|1|Grundig|1935
+13|1|H & B|2001
+13|1|Haier|2309
+13|1|Hanseatic|2001
+13|1|Hikona|1983
+13|1|Hitachi|1037,1960
+13|1|Hyundai|1770
+13|1|Initial|1990
+13|1|Insignia|1963,2049
+13|1|JVC|2271,1774
+13|1|Jensen|1933
+13|1|KLH|1962
+13|1|LG|1423
+13|1|Lenco|587,1983
+13|1|Logik|1037,1865
+13|1|Luxor|1037
+13|1|Magnavox|1866,1963,1990,2372
+13|1|Marks and Spencer|1770
+13|1|Matsui|1037
+13|1|Memorex|1670
+13|1|Memory|1983
+13|1|Mintek|1990
+13|1|Mx Onda|1983
+13|1|Nimbro|2104
+13|1|Nordmende|2001
+13|1|Onn|1770
+13|1|Onyx|1770
+13|1|Opera|1770
+13|1|Otic|1983
+13|1|Pacific|1935
+13|1|Palsonic|1849
+13|1|Panasonic|1291,1941
+13|1|Philips|1961,1454,556,1394
+13|1|Plustron|1770
+13|1|Polaroid|1523,1766
+13|1|Powerpoint|698,1770
+13|1|Prima|1933
+13|1|Proscan|2256
+13|1|Prosonic|1770,1865,2001
+13|1|Pvision|2001
+13|1|RCA|2187,1447,1948,1958
+13|1|SEG|1037
+13|1|Samsung|1903
+13|1|Sansui|1935,1670
+13|1|Schaub Lorenz|2001
+13|1|Scott|1983
+13|1|Sharp|818
+13|1|Shinelco|2104
+13|1|Sontech|1983
+13|1|Sova|1952
+13|1|Sunstech|2001
+13|1|Swisstec|2104
+13|1|Sylvania|1864,1394,1886,1963,171
+13|1|Teac|587,698,1770,1983
+13|1|Technica|1037
+13|1|Technika|1865,1983,2106
+13|1|Telefunken|698
+13|1|Teletech|1037
+13|1|Thomson|625
+13|1|Toshiba|1524,1935,2006
+13|1|Tosumi|1770
+13|1|Transonic|587
+13|1|UMC|2106
+13|1|United|587,1037,1770,1983
+13|1|Venturer|1865
+13|1|Vestel|1037
+13|1|Viore|2104,2352
+13|1|Weltstar|1037
+13|1|Westinghouse|1300
+13|1|Wharfedale|1983
+13|1|Xiron|1983
+13|1|Xomax|1770
+13|1|cello|1770
+13|1|iLo|1990
+13|7|Advent|1016
+13|7|Akai|695
+13|7|Alba|695,884
+13|7|Apex Digital|830
+13|7|Audiovox|1071,1121,1122
+13|7|Axion|1071
+13|7|Black Diamond|713,884
+13|7|Blue Sky|713,884
+13|7|Broksonic|695
+13|7|Bush|713,884,516
+13|7|Centrum|713
+13|7|Citizen|695
+13|7|Crown|713
+13|7|Dual|713,884,1115
+13|7|ESA|1268
+13|7|Elfunk|713,884
+13|7|Emerson|675,1268
+13|7|Ferguson|695,713,884
+13|7|Funai|1268
+13|7|Go Vision|1071
+13|7|Goodmans|713
+13|7|Grandin|713
+13|7|Grundig|539,695
+13|7|Hitachi|713,884,1247
+13|7|Insignia|1268
+13|7|Jensen|1016
+13|7|Konka|1192
+13|7|Logik|713,884
+13|7|Luxor|713,884
+13|7|Magnavox|1268
+13|7|Matsui|713,884
+13|7|Orion|695
+13|7|Pacific|695
+13|7|Panasonic|1490
+13|7|Philips|539,854,1260
+13|7|Prima|1016
+13|7|RCA|1022
+13|7|SEG|713,884
+13|7|Samsung|899
+13|7|Sansui|695
+13|7|Sliding|1115
+13|7|Sova|1122
+13|7|Sylvania|630,675,1268
+13|7|Technica|713,884
+13|7|Technika|2302
+13|7|Teletech|713,884
+13|7|Thomson|551
+13|7|Toshiba|695
+13|7|UMC|2302
+13|7|United|713,884
+13|7|Universum|713
+13|7|Vestel|884
+13|7|Weltstar|713
+13|7|Wharfedale|1115
+14|1|Aiwa|1904,1911,1916
+14|1|America Action|180
+14|1|Amstrad|171
+14|1|Audiovox|180
+14|1|Beko|486
+14|1|Black Diamond|1909
+14|1|Blue Sky|1916
+14|1|Broksonic|463,1911
+14|1|Curtis Mathes|51
+14|1|Daewoo|1909
+14|1|Emerson|236,463,1909,1911
+14|1|Ferguson|625,73
+14|1|Fidelity|171
+14|1|Funai|1904
+14|1|GE|93,47,51,1917,1922
+14|1|GoldStar|37
+14|1|Goodmans|1909,374
+14|1|Grundig|37,195,556,1916
+14|1|Harley Davidson|1904
+14|1|Hitachi|1904
+14|1|Internal|1909
+14|1|JVC|53,1923
+14|1|LG|178
+14|1|Lloyd's|1904
+14|1|Magnavox|54,1904
+14|1|Matsui|1916
+14|1|Memorex|250
+14|1|Mitsubishi|93,556,1917
+14|1|Orion|463,1911,1916
+14|1|Palsonic|1904
+14|1|Panasonic|250,51
+14|1|Penney|51
+14|1|Philips|37,556
+14|1|Quasar|250,51
+14|1|RCA|93,47,51,1917,1922
+14|1|RadioShack|1904
+14|1|Radiola|556
+14|1|Saba|625
+14|1|Samsung|1959
+14|1|Sansui|463,1904,1911
+14|1|Schneider|37,556,1904
+14|1|Sears|1904
+14|1|Sharp|818,93,1917
+14|1|Siemens|37
+14|1|Sony|0,1505,1904
+14|1|Sylvania|54
+14|1|Symphonic|1904
+14|1|Teac|178,171,1909,1904
+14|1|Technics|556
+14|1|Thomas|1904
+14|1|Thomson|625
+14|1|Toshiba|2006,1971
+14|1|United|1916
+14|1|Universum|105
+14|1|White Westinghouse|1909
+14|1|Zenith|1909,1904,1911
+14|5|Aiwa|352,479,742,1137,0
+14|5|Akai|352
+14|5|Alba|352
+14|5|America Action|278
+14|5|Amstrad|0
+14|5|Audiovox|278
+14|5|BPL|46
+14|5|Beko|104
+14|5|Bestar|278
+14|5|Blue Sky|352,742,278
+14|5|Broksonic|479,742,2,1479
+14|5|Bush|352,742
+14|5|Citizen|278,1278
+14|5|Colt|72
+14|5|Curtis Mathes|35,1035
+14|5|Daewoo|278,637,1278
+14|5|Dantax|352,742
+14|5|Emerson|479,2,278,637,1278,1479
+14|5|Ferguson|742,0,278
+14|5|Fidelity|0
+14|5|Firstline|278
+14|5|Funai|0
+14|5|GE|60,35,48,240,807,1035,1060
+14|5|GoldStar|37,480,1237
+14|5|Goodmans|352,742,278,637
+14|5|Gradiente|1137
+14|5|Grandin|742,278
+14|5|Grundig|81,347,352,742
+14|5|Hanimex|352
+14|5|Harley Davidson|0
+14|5|Hinari|352
+14|5|Hitachi|0
+14|5|Hypson|37
+14|5|Internal|278,637
+14|5|JBL|278
+14|5|JMB|352
+14|5|Kambrook|37
+14|5|Kneissel|352,278
+14|5|LG|37,480,1237
+14|5|Lloyd's|0
+14|5|Loewe|37
+14|5|MGA|240
+14|5|Magnasonic|278,1278
+14|5|Magnavox|81,0,1781
+14|5|Magnin|240
+14|5|Matsui|352,742
+14|5|Medion|352
+14|5|Memorex|162,37,1237
+14|5|Mitsubishi|48,81,43,807
+14|5|Optimus|162
+14|5|Orion|352,479,742,2,1479
+14|5|Pace|352
+14|5|Pacific|742
+14|5|Palsonic|0
+14|5|Panasonic|35,162,1035
+14|5|Penney|35,37,240,1035,1237
+14|5|Philco|479
+14|5|Philips|81
+14|5|Portland|637
+14|5|Quasar|35,162,1035
+14|5|RCA|60,35,48,240,807,1035,1060
+14|5|RadioShack|0
+14|5|Radiola|81
+14|5|SEG|637
+14|5|Saba|320
+14|5|Samsung|240,742,432,1014
+14|5|Sansui|479,0,1479
+14|5|Sanyo|240
+14|5|Saville|352
+14|5|Schneider|81,352,0
+14|5|Sears|37,0,1237
+14|5|Sharp|37,48,807
+14|5|Shivaki|37
+14|5|Siemens|81
+14|5|Sinudyne|352
+14|5|Sony|32,0,1232
+14|5|Supra|348
+14|5|Sylvania|81,1781
+14|5|Symphonic|0
+14|5|Tatung|352
+14|5|Teac|37,642,0,637
+14|5|Technics|81
+14|5|Technosonic|352
+14|5|Telefunken|278
+14|5|Thomas|0
+14|5|Thomson|278
+14|5|Toshiba|352,742,432,845,1145
+14|5|United|742
+14|5|White Westinghouse|278,637
+14|5|Zenith|479,0,637,1479
+14|7|Thomson|551
+14|10|Sony|0
+15|1|Akai|1903
+15|1|Broksonic|1938
+15|1|ESA|1944
+15|1|Emerson|1944
+15|1|Insignia|1963
+15|1|Magnavox|1944
+15|1|Panasonic|1946,1947
+15|1|RCA|1953
+15|1|Sharp|1917
+15|1|Sylvania|1944
+15|1|Symphonic|1944
+15|1|Toshiba|1945
+15|5|Sharp|807
+15|7|Akai|899
+15|7|Broksonic|868
+15|7|ESA|821
+15|7|Emerson|821
+15|7|Ferguson|695
+15|7|Funai|1334
+15|7|Magnavox|821
+15|7|Matsui|695
+15|7|Panasonic|1362,1462
+15|7|RCA|1132
+15|7|Sharp|630
+15|7|Superscan|821
+15|7|Sylvania|821
+15|7|Symphonic|821
+15|7|Toshiba|1045
+16|5|A-Mark|37,240,0,278,46
+16|5|ABS|1972
+16|5|AEG|1593
+16|5|ASA|37,81
+16|5|AVP|352,0
+16|5|Accent|72
+16|5|Accurian|0
+16|5|Admiral|48,479,60,39,47,104,121,209
+16|5|Adventura|0,37,240
+16|5|Adyson|72
+16|5|Aiko|278
+16|5|Aim|348,642,278
+16|5|Aiwa|37,0,32,348,352,479,742,1137,209,41
+16|5|Akai|37,240,348,352,642,41,315,106
+16|5|Akiba|72
+16|5|Akura|41,72
+16|5|Alba|81,348,352,0,209,72,278,315
+16|5|Alienware|1972
+16|5|Allegro|39,1137
+16|5|Allorgan|240
+16|5|Allstar|81
+16|5|America Action|278
+16|5|American High|35,81
+16|5|Amoisonic|479
+16|5|Amstrad|0,72,278
+16|5|Anam|162,37,240,226,278,480
+16|5|Anam National|162,226,1562
+16|5|Anitech|72
+16|5|Ansonic|0
+16|5|Aristona|81
+16|5|Asha|240
+16|5|Astra|35,240
+16|5|Asuka|37,81,0,72,38
+16|5|Audiolab|81
+16|5|Audiosonic|278
+16|5|Audiovox|37,278,38
+16|5|Avis|0,72
+16|5|Awa|37,43,320,642,278
+16|5|BPL|46
+16|5|Baird|104,0,41,278,106,46
+16|5|Basic Line|104,72,278,46
+16|5|Beaumark|240
+16|5|Beko|104
+16|5|Bell & Howell|104,35,48,39,0,46,479
+16|5|Bestar|278
+16|5|Black Diamond|642
+16|5|Black Panther|278
+16|5|Blaupunkt|162,81,226
+16|5|Blue Sky|37,348,352,642,742,1137,209,72,278,480
+16|5|Bondstec|72
+16|5|Brandt|320,41
+16|5|Brandt Electronique|41
+16|5|Brinkmann|348,209
+16|5|Broksonic|184,348,479,742,121,209,2,1479
+16|5|Bush|81,348,352,642,742,0,209,72,278,315
+16|5|CCE|278,72
+16|5|CGE|0,41
+16|5|Calix|37
+16|5|Candle|37,38
+16|5|Canon|35
+16|5|Capehart|2
+16|5|Carena|81,209
+16|5|Carrefour|45
+16|5|Carrera|240
+16|5|Carver|81,35
+16|5|Casio|0
+16|5|Cathay|278
+16|5|Centrum|1593
+16|5|Changhong|48,81
+16|5|Cimline|209,72
+16|5|CineVision|1137
+16|5|Cineral|278
+16|5|Citizen|37,278,35,240,0,209,479,1278
+16|5|Classic|37
+16|5|Clatronic|1593,0,72
+16|5|Colortyme|60,35,45,278
+16|5|Colt|0,72
+16|5|Combitech|352
+16|5|Condor|278
+16|5|Craig|37,240,47,72
+16|5|Criterion|0,72
+16|5|Crosley|81,0,35,149
+16|5|Crown|37,72,278,480
+16|5|Curtis Mathes|60,35,162,278,240,0,41,432,1035
+16|5|CyberPower|1972
+16|5|Cybernex|240
+16|5|Cyrus|81
+16|5|DSE|642,1593
+16|5|Daewoo|45,278,104,352,642,1137,37,209,637,46,1278
+16|5|Dansai|72,278
+16|5|Dantax|348,352,742
+16|5|Daytron|37,278
+16|5|De Graaf|48,81,42,104,46
+16|5|Decca|81,67,352,0,209,41
+16|5|Degraff|48,81,42,104
+16|5|Deitron|278
+16|5|Dell|1972
+16|5|Denko|72
+16|5|Denon|42,81
+16|5|Derwent|41
+16|5|Diamant|37
+16|5|Diamond|348
+16|5|Dick Smith Electronics|642
+16|5|Digitor|642
+16|5|DirecTV|739,740
+16|5|Domland|209
+16|5|Dual|81,348,0,41,278
+16|5|Dumont|81,104,0
+16|5|Durabrand|39,38,642,1593
+16|5|Dynatech|0,240
+16|5|ESA|1137
+16|5|ESC|240,278
+16|5|Elbe|278,38
+16|5|Elcatech|72
+16|5|Electrohome|37,43,60,240,0,209
+16|5|Electrophonic|37
+16|5|Elin|240
+16|5|Elsay|72
+16|5|Elta|72,278
+16|5|Emerald|184,121
+16|5|Emerex|32
+16|5|Emerson|37,0,43,278,593,1593,35,184,240,45,348,479,39,121,209,72,2,637,1278,1479
+16|5|EuroLine|1593
+16|5|Ferguson|320,348,742,0,41,278
+16|5|Fidelity|240,352,0,72,432
+16|5|Finlandia|37,48,81,42,104,43,226,0,106,46
+16|5|Finlux|81,42,104,0
+16|5|Firstline|37,45,42,43,348,1137,209,72,278,480
+16|5|Fisher|104,39,47,0,46
+16|5|Flint|348,209
+16|5|Frontech|72
+16|5|Fuji|35,33
+16|5|Fujitsu|45,37,0
+16|5|Fujitsu General|37
+16|5|Funai|0,593,1593,37,72,278
+16|5|GE|60,35,202,48,240,226,320,0,149,807,1035,1060
+16|5|GEC|81
+16|5|GFM|1593
+16|5|GPX|37
+16|5|Galaxi|0
+16|5|Galaxis|278
+16|5|Garrard|0
+16|5|Gateway|1972
+16|5|Gemini|60
+16|5|General|45
+16|5|General Technic|348
+16|5|Genexxa|104,37,0,278
+16|5|Go Video|614,240,1137,432
+16|5|GoldHand|72
+16|5|GoldStar|37,38,226,1137,35,39,0,209,278,225,480,1237
+16|5|Goodmans|37,81,240,348,352,642,742,0,209,72,278,637
+16|5|Gradiente|0,1137
+16|5|Graetz|240,104,41
+16|5|Granada|37,48,81,240,42,104,226,35,0,46
+16|5|Grandin|37,742,0,209,72,278
+16|5|Grundig|81,226,320,347,348,352,742,72
+16|5|HCM|72
+16|5|HI-Q|35,47,0
+16|5|HP|1972
+16|5|Haaz|348
+16|5|Hanimex|352
+16|5|Hanseatic|37,81,209,38
+16|5|Haojie|240
+16|5|Harley Davidson|0
+16|5|Harman/Kardon|81,38
+16|5|Harvard|72
+16|5|Harwood|72
+16|5|Headquarter|46
+16|5|Hewlett Packard|1972
+16|5|Hinari|240,352,209,41,72,278
+16|5|Hisawa|352,209
+16|5|Hischito|45
+16|5|Hitachi|0,42,37,81,240,35,45,41,46,89
+16|5|Hoeher|642,278
+16|5|Hornyphon|81
+16|5|Howard Computers|1972
+16|5|Hughes Network Systems|739,42,740
+16|5|Humax|739
+16|5|Hush|1972
+16|5|Hypson|37,352,0,209,72,278,480
+16|5|Hytek|47,0,72
+16|5|ITT|240,104,41,106,46
+16|5|ITT Nokia|240,104,41,106
+16|5|ITV|37,278
+16|5|Imperial|0
+16|5|Ingersol|240,209
+16|5|Inno Hit|72
+16|5|Instant Replay|35,226
+16|5|Interbuy|37,72
+16|5|Interfunk|81,104
+16|5|Internal|278,637
+16|5|International|37,642,278
+16|5|Intervision|37,348,0,209,278
+16|5|Irradio|37,81,1137,72
+16|5|JBL|278
+16|5|JMB|348,352,742,209
+16|5|JVC|67,81,45,184,41
+16|5|Janeil|240
+16|5|Jensen|67,41
+16|5|Joyce|0
+16|5|KEC|37,278
+16|5|KIC|0
+16|5|KLH|72
+16|5|KTV|0
+16|5|Kaisui|72
+16|5|Kambrook|37
+16|5|Karcher|81,642,278
+16|5|Kendo|37,348,642,209,72,278,315,106
+16|5|Kenwood|67,38,41,46
+16|5|Kimari|47
+16|5|Kioto|348
+16|5|Kneissel|37,348,352,209,278
+16|5|Kodak|35,37
+16|5|Kolin|43,41
+16|5|Kolster|209
+16|5|Korpel|72
+16|5|Kuba|47
+16|5|Kuba Electronic|47
+16|5|Kyoto|72
+16|5|LG|37,45,42,1137,240,0,209,278,38,225,480,1237
+16|5|LXI|37,0,42,67
+16|5|Lenco|278
+16|5|Leyco|72
+16|5|Lifetec|348,209
+16|5|Linksys|1972
+16|5|Lloyd's|0,240,72,38
+16|5|Loewe|1062,162,37,81,1562
+16|5|Logik|240,0,209,72,106
+16|5|Lumatron|1137,278
+16|5|Lunatron|1137
+16|5|Lux May|72
+16|5|Luxor|48,104,43,47,72,315,106,46
+16|5|M Electronic|37,240,0,38
+16|5|MEI|35
+16|5|MGA|43,240,60
+16|5|MGN Technology|240
+16|5|MTC|0,240,72
+16|5|MTX|0
+16|5|Magnadyne|81
+16|5|Magnasonic|593,37,240,0,72,278,1278
+16|5|Magnavox|35,39,81,0,593,1593,642,37,48,240,149,226,618,1781
+16|5|Magnin|240
+16|5|Magnum|642
+16|5|Manesth|81,45,209,72
+16|5|Marantz|35,81,209,38
+16|5|Mark|0,278
+16|5|Marta|37
+16|5|Mascom|642
+16|5|Mastec|642
+16|5|Master's|278
+16|5|Matsui|37,240,348,352,742,209,278
+16|5|Matsushita|35,162,226,81
+16|5|Media Center PC|1972
+16|5|Mediator|81
+16|5|Medion|348,352,642,209
+16|5|Memorex|35,162,37,48,39,0,46,240,104,348,479,47,209,72,278,1237
+16|5|Memphis|72
+16|5|Metronic|81
+16|5|Metz|1062,162,37,81,226,347,836,1562
+16|5|Micormay|348
+16|5|Micromaxx|209
+16|5|Microsoft|1972
+16|5|Midland|240
+16|5|Migros|0
+16|5|Mind|1972
+16|5|Minolta|42
+16|5|Mitsubishi|67,43,173,48,81,642,60,47,0,42,41,480,807
+16|5|Motorola|35,48
+16|5|Movie Walker|72
+16|5|Multitec|37
+16|5|Multitech|0,39,72
+16|5|Murphy|0
+16|5|Myryad|81
+16|5|NAD|104,240
+16|5|NAP|39
+16|5|NEC|67,38,35,37,48,104,1137,41,278
+16|5|Naiko|348,642
+16|5|National|226
+16|5|Nebula Electronics|33
+16|5|Neckermann|81,41
+16|5|Nesco|0,72
+16|5|Neufunk|1137,209
+16|5|New Tech|72
+16|5|Newave|37
+16|5|Nikkai|72,278
+16|5|Nikko|37,278
+16|5|Nikkodo|37,278
+16|5|Nishi|240
+16|5|Niveus Media|1972
+16|5|Noblex|240
+16|5|Nokia|48,81,240,42,104,41,278,315,106,46
+16|5|Nordmende|67,320,642,41
+16|5|Northgate|1972
+16|5|Nu-Tec|209
+16|5|Oceanic|48,81,104,320,0,41,106,46
+16|5|Okano|348,209,72,278,315
+16|5|Olympus|35,226,162,104
+16|5|Onimax|642
+16|5|Onkyo|222
+16|5|Optimus|1062,162,37,48,593,104,35,47,240,0,432
+16|5|Orbit|72
+16|5|Orion|184,348,352,479,742,240,0,104,121,209,2,278,1479
+16|5|Orson|0
+16|5|Osaki|37,0,72
+16|5|Osume|72
+16|5|Otake|209
+16|5|Otto Versand|81
+16|5|Pace|352
+16|5|Pacific|348,642,742,0
+16|5|Packard Bell|1972
+16|5|Palladium|37,348,209,41,72
+16|5|Palsonic|642,0,72
+16|5|Panama|35
+16|5|Panasonic|1062,35,162,614,616,226,836,1562,0,225,1035
+16|5|Pathe Cinema|43
+16|5|Pathe Marconi|41
+16|5|Penney|35,37,42,38,240,162,47,81,0,67,1035,1237
+16|5|Pentax|42
+16|5|Perdio|0,209
+16|5|Philco|35,226,479,81,0,209,72,38
+16|5|Philips|739,35,81,618,1081,1181,226,162,48,45,0,209,616
+16|5|Phoenix|278
+16|5|Phonola|81
+16|5|Pilot|37
+16|5|Pioneer|67,162,81,42
+16|5|Polk Audio|81
+16|5|Portland|278,637
+16|5|Presidian|1593
+16|5|Prinz|0
+16|5|ProVision|278
+16|5|Profitronic|81,240
+16|5|Proline|320,642,0,278
+16|5|Proscan|60,202,1060
+16|5|Prosco|278
+16|5|Prosonic|209,278
+16|5|Protec|0,72
+16|5|Protech|81,72
+16|5|Pulsar|39,240,278
+16|5|Pulser|240
+16|5|Pye|81,0
+16|5|Qisheng|60
+16|5|Quarter|46
+16|5|Quartz|46,35,47
+16|5|Quasar|35,162,2,278,226,1035
+16|5|Quelle|81
+16|5|RCA|60,42,202,880,35,48,240,226,320,45,0,149,106,807,1035,1060
+16|5|RFT|72
+16|5|Radialva|37,48,81,72
+16|5|RadioShack|0,37,35,162,48,47,240,104,46
+16|5|Radiola|81
+16|5|Radionette|37,1137
+16|5|Radix|37
+16|5|Randex|37
+16|5|Rank|41
+16|5|Rank Arena|41
+16|5|Realistic|35,37,48,0,46,104,162,47,240,121,278
+16|5|Reoc|348
+16|5|ReplayTV|614,616
+16|5|Rex|41
+16|5|Ricavision|1972
+16|5|Rio|1137
+16|5|Roadstar|37,81,240,742,72,278,38
+16|5|Royal|72
+16|5|Runco|39
+16|5|SBR|81
+16|5|SEG|81,240,642,72,278,637
+16|5|SEI|81
+16|5|STS|42
+16|5|SV2000|0,72
+16|5|SVA|0
+16|5|Saba|320,41,278
+16|5|Saisho|348,209
+16|5|Salora|104,43,106,46
+16|5|Sampo|37,48
+16|5|Samsung|739,45,240,742,60,0,38,432,1014
+16|5|Samtron|240
+16|5|Sanky|48,39
+16|5|Sansei|48
+16|5|Sansui|0,67,348,479,240,209,41,72,2,106,1479
+16|5|Sanyo|46,48,240,104,67,348,1137,47,0,209,479
+16|5|Saville|240,352,278
+16|5|ScanSonic|240
+16|5|Sceptre|104
+16|5|Schaub Lorenz|104,348,0,41,315,106
+16|5|Schneider|37,81,240,42,348,352,642,1137,0,72,278
+16|5|Scott|45,43,184,121
+16|5|Sears|35,37,0,42,46,104,60,162,48,39,47,33,45,67,43,209,41,72,1237
+16|5|Seaway|278
+16|5|Sei-Sinudyne|81
+16|5|Seleco|37,41
+16|5|Semivox|45,209
+16|5|Semp|45
+16|5|Sentra|72,278
+16|5|Setron|72
+16|5|Sharp|48,848,37,1137,47,32,0,209,807
+16|5|Shinco|0
+16|5|Shintom|104,39,240,0,72
+16|5|Shivaki|37
+16|5|Shogun|240
+16|5|Siemens|37,81,104,320,347,46
+16|5|Siera|81
+16|5|Signature|35,60,37,48,0,149,46,479
+16|5|Silva|37
+16|5|Silva Schneider|1137
+16|5|Silver|278
+16|5|SilverCrest|642
+16|5|Singer|45,348,37,240,72
+16|5|Sinudyne|81,352,209
+16|5|Skantic|348
+16|5|Smaragd|348
+16|5|Sonic Blue|614,616,1137
+16|5|Sonneclair|72
+16|5|Sonographe|46
+16|5|Sonolor|48,46
+16|5|Sontec|37,278
+16|5|Sonwa|642
+16|5|Sony|32,35,33,0,636,1032,1972,48,47,67,106,226,46,1232
+16|5|Soundmaster|0
+16|5|Soundwave|37,348,209
+16|5|Ssangyong|72
+16|5|Stack 9|1972
+16|5|Standard|278
+16|5|Stern|278
+16|5|Sunkai|348,209,278
+16|5|Sunstar|0
+16|5|Suntronic|0
+16|5|Sunwood|72
+16|5|Supra|37,348,278
+16|5|Susumu|37
+16|5|Sylvania|35,81,0,43,593,1593,1781
+16|5|Symphonic|0,593,1593,240,2
+16|5|Systemax|1972
+16|5|T+A|162
+16|5|TCM|348
+16|5|TMK|240,0
+16|5|TNIX|37
+16|5|Tagar Systems|1972
+16|5|Taisho|209
+16|5|Tandberg|278
+16|5|Tandy|104,0
+16|5|Tashiko|37,48,81,240,0
+16|5|Tatung|48,81,45,67,43,348,352,0,209,41
+16|5|Tchibo|348
+16|5|Teac|0,37,642,1593,67,41,72,278,637
+16|5|Tec|72
+16|5|Tech Line|72
+16|5|TechniSat|348
+16|5|Technics|35,162,81,226,37,0
+16|5|Technosonic|352
+16|5|Teco|35,37,48,41,38
+16|5|Tedelex|37,348,642,209
+16|5|Teknika|35,37,0
+16|5|Teleavia|41
+16|5|Telecorder|240
+16|5|Telefunken|320,642,209,41,278
+16|5|Telerent|226
+16|5|Telestar|37
+16|5|Teletech|0,72,278
+16|5|Tenosal|72
+16|5|Tensai|37,0,72,278
+16|5|Tesla|81
+16|5|Tevion|348,642,209,479
+16|5|Texet|278
+16|5|Thomas|0,2
+16|5|Thomson|60,67,320,41,278
+16|5|Thorn|37,104,41,320
+16|5|Tisonic|278
+16|5|Tivo|739,618,636,740,1996,1503
+16|5|Tocom|240
+16|5|Tokai|37,104,41,72
+16|5|Topline|348
+16|5|Toshiba|45,43,1008,1972,81,42,67,352,742,240,0,209,41,432,845,1145,1996,1503
+16|5|Tosonic|278
+16|5|Totevision|37,240
+16|5|Touch|1972
+16|5|Towada|72
+16|5|Toyoda|278
+16|5|Tradex|81
+16|5|Triad|278
+16|5|Trix|37
+16|5|Uher|240
+16|5|Ultra|45,278
+16|5|Ultravox|278
+16|5|Unitech|240
+16|5|United|348,742,1593
+16|5|Universum|37,81,240,104,348,1137,0,209,106
+16|5|Vector|45
+16|5|Vector Research|38,184
+16|5|Vextra|72
+16|5|Victor|67,41
+16|5|Video Concepts|45
+16|5|Video Technic|0
+16|5|Videomagic|37
+16|5|Videosonic|240,0,72
+16|5|Viewsonic|1972
+16|5|Villain|0
+16|5|Voodoo|1972
+16|5|Wards|60,35,48,81,0,42,39,33,240,45,37,47,43,41,72,38,149,46,479
+16|5|Watson|81,352,642
+16|5|Weltblick|37
+16|5|Wharfedale|642
+16|5|White Westinghouse|0,209,72,278,637,479
+16|5|World|348,209,2,479
+16|5|XR-1000|35,0,240,72
+16|5|Yamaha|38,41
+16|5|Yamishi|72,278
+16|5|Yokan|72
+16|5|Yoko|37,240,72
+16|5|Yoshita|72
+16|5|ZT Group|1972
+16|5|ZX|348,352,209
+16|5|Zenith|37,39,33,0,1139,479,1137,209,41,278,637,1479
+16|5|iBUYPOWER|1972
+17|5|Emerson|0
+17|5|Magnavox|0
+17|5|Toshiba|1008
+17|7|4Kus|1158
+17|7|Accurian|1416
+17|7|Airis|1321
+17|7|Akira|1321
+17|7|Alba|1530
+17|7|Apex Digital|1056
+17|7|Aristona|646
+17|7|Aspire Digital|1168
+17|7|Belson|1086
+17|7|Cat|1421
+17|7|Centrum|1227
+17|7|Classic|1730
+17|7|Coby|1086
+17|7|Commax|1321
+17|7|Conia|1321
+17|7|CyberHome|1129,1502
+17|7|Cytron|1347
+17|7|DSE|1730
+17|7|Denon|490
+17|7|Denver|1056
+17|7|Dick Smith Electronics|1730
+17|7|Digitrex|1056
+17|7|Durabrand|1502
+17|7|E:max|1321
+17|7|Ellion|1421
+17|7|Eltax|1321
+17|7|Emerson|675
+17|7|Ferguson|1730
+17|7|Firstline|1530
+17|7|Funai|675,1334
+17|7|GPX|741
+17|7|Gateway|1073,1158
+17|7|Go Video|741,1158,1304,1730
+17|7|Goodmans|1530,1730
+17|7|Grundig|1730
+17|7|H & B|1421
+17|7|Humax|646
+17|7|JVC|1164
+17|7|KXD|1321
+17|7|Kansas Technologies|1530
+17|7|Kreisen|1421
+17|7|LG|741
+17|7|Lifetec|1347
+17|7|LiteOn|1158,1416,1440
+17|7|Loewe|741
+17|7|Lumatron|1321
+17|7|Luxor|1730
+17|7|MBO|1730
+17|7|Magnavox|646,675
+17|7|Matsui|1730
+17|7|Maxent|1347
+17|7|Medion|1347
+17|7|MiCO|751
+17|7|Mustek|1730
+17|7|Oopla|1158
+17|7|Palsonic|1056,1321
+17|7|Panasonic|490
+17|7|Philips|646,1158
+17|7|Pioneer|631
+17|7|Polaroid|1086
+17|7|ProVision|1321
+17|7|Pye|646
+17|7|RCA|522
+17|7|Relisys|1347
+17|7|Roadstar|1227
+17|7|SEG|1530
+17|7|Sampo|1347
+17|7|Samsung|490
+17|7|ScanMagic|1730
+17|7|Schneider|646
+17|7|Sensory Science|1158
+17|7|Sharp|630,675
+17|7|Sony|1033,1070,1431,1433,1536
+17|7|Star Clusters|1227
+17|7|Sylvania|675
+17|7|Tangent|1321
+17|7|Targa|1227
+17|7|Teac|1227
+17|7|Techwood|1530
+17|7|Tevion|1227,1347,1730
+17|7|Thomson|551
+17|7|Toshiba|1510
+17|7|Universum|1227,1530
+17|7|Vestel|1530
+17|7|Waltham|1530
+17|7|Yakumo|1056
+17|7|Yamada|1056,1158,1416
+17|7|Yamaha|646
+17|7|Yukai|1730
+17|7|Zenith|741
+17|7|cello|1730
+17|7|iLo|1348
+18|5|ABS|1972
+18|5|Alienware|1972
+18|5|CyberPower|1972
+18|5|Dell|1972
+18|5|DirecTV|739,740
+18|5|Gateway|1972
+18|5|Go Video|614
+18|5|HP|1972
+18|5|Hewlett Packard|1972
+18|5|Howard Computers|1972
+18|5|Hughes Network Systems|739,740
+18|5|Humax|739
+18|5|Hush|1972
+18|5|Linksys|1972
+18|5|Media Center PC|1972
+18|5|Microsoft|1972
+18|5|Mind|1972
+18|5|Niveus Media|1972
+18|5|Northgate|1972
+18|5|Panasonic|614,616
+18|5|Philips|739,618
+18|5|RCA|880
+18|5|ReplayTV|614,616
+18|5|Samsung|739
+18|5|Sonic Blue|614,616
+18|5|Sony|636,1972
+18|5|Stack 9|1972
+18|5|Systemax|1972
+18|5|Tagar Systems|1972
+18|5|Tivo|739,618,636,740
+18|5|Toshiba|1008,1972,1996
+18|5|Touch|1972
+18|5|Viewsonic|1972
+18|5|Voodoo|1972
+18|5|ZT Group|1972
+18|5|iBUYPOWER|1972
+19|7|3D LAB|539,503
+19|7|4Kus|1158
+19|7|A-Trend|714
+19|7|AEG|675,770,1233,2173,790,788,1923
+19|7|AFK|1051,1152,1923
+19|7|AG Electronics|713
+19|7|AKI|1005
+19|7|AMW|872
+19|7|ASCOMTEC|1923
+19|7|AVideo|2173
+19|7|Accurian|675,1416
+19|7|Acoustic Solutions|713,730,1228
+19|7|Advent|1016
+19|7|Aim|672,833,699,778
+19|7|Airis|672,826,1005,1107,1224,1250,1321,1345
+19|7|Aiwa|641,533
+19|7|Akai|695,770,675,884,898,1115,1233,790,690,705,788,899,1205
+19|7|Akashi|838
+19|7|Akira|699,1321
+19|7|Akura|898,1051,1140,1233,1493
+19|7|Alba|672,539,695,713,730,884,1140,1530,717,699,783
+19|7|Alco|790
+19|7|Alize|1151
+19|7|All-Tel|1451
+19|7|Allegro|869
+19|7|Altacom|1224
+19|7|Amitech|770,784,850
+19|7|Amoi|852
+19|7|Amphion Media Works|872
+19|7|Amstrad|713,770,1493,2139,1151
+19|7|Anam|1913
+19|7|Ansonic|831,1493,774,759
+19|7|Apex Digital|672,794,796,797,1004,1020,1056,1061,533,717,755,830,1100
+19|7|Arena|1115
+19|7|Aristona|539,646
+19|7|Arrgo|1023
+19|7|Asono|1224
+19|7|Aspire Digital|1168
+19|7|Atacom|1224
+19|7|Audio Authority|2555
+19|7|Audiola|1660
+19|7|Audiosonic|690,1923
+19|7|Audiovox|717,790,1071,1121,1122
+19|7|Audioworld|790
+19|7|Audix|713
+19|7|Autovox|713
+19|7|Auvio|843
+19|7|Awa|730,872,2587
+19|7|Axil|2139
+19|7|Axion|730,1071
+19|7|B & K|662
+19|7|BBK|1224,2332,862
+19|7|Bang & Olufsen|2696
+19|7|Base|1451
+19|7|Basic Line|713
+19|7|Baze|898
+19|7|Beep|1163
+19|7|Bel Canto Design|1571
+19|7|Bellagio|1004
+19|7|Bellwood|826
+19|7|Belson|1493,2139,1086,1923
+19|7|Belsonic|1493
+19|7|Berthen|1643
+19|7|Best Buy|2139
+19|7|Binatone|1923
+19|7|Black Diamond|713,833,884
+19|7|Blaupunkt|717
+19|7|Blu:sens|1233,1321
+19|7|Blue Nova International|1321
+19|7|Blue Parade|571
+19|7|Blue Sky|672,695,713,884,651,790,699,778,843,1423
+19|7|Boghe|1004
+19|7|Boman|898,1005,783
+19|7|Bose|2023
+19|7|Brainwave|770,1115
+19|7|Brandt|503,551,651
+19|7|Broksonic|695,868
+19|7|Bush|672,713,730,831,833,884,1051,1140,1530,717,516,690,699,723,778,1483,1832
+19|7|Byd:sign|872
+19|7|C-Tech|1152,798
+19|7|CCE|730
+19|7|CGV|1115,751
+19|7|CJ Digital|1643,2173
+19|7|CMX|1643
+19|7|California Audio Labs|490
+19|7|Cambridge Audio|2808,751,1109
+19|7|Cambridge Soundworks|690
+19|7|Campomatic Digital|1051
+19|7|Cat|789,699,1421,1923
+19|7|Celestial|1020
+19|7|Centrex|672,1004
+19|7|Centrum|675,713,789,1005,1227,1923
+19|7|Changhong|627,1061
+19|7|Chili|1493
+19|7|CineVision|869,833,876,1483
+19|7|Cinea|831,841
+19|7|Cineral|730
+19|7|Cinetec|713,872
+19|7|Citizen|695,2116,1003,1277
+19|7|Clairtone|571
+19|7|Classic|730,1730
+19|7|Clatronic|672,675,1233,788
+19|7|Clayton|713
+19|7|Coby|852,1086,1107,1177,1351,1628,730,778,1321,1923
+19|7|Codex|1233
+19|7|Commax|1321
+19|7|Compacks|826,1107
+19|7|Conia|672,516,852,1321
+19|7|Contel|2331,788
+19|7|Continental Edison|831,872
+19|7|Craig|831
+19|7|Creative|503,539
+19|7|Crown|713,770,1115,690
+19|7|Crypto|1228
+19|7|Curtis|1493
+19|7|Curtis Mathes|1087
+19|7|CyberHome|1023,1024,1129,1502,816,714,874,1117
+19|7|Cybercom|831
+19|7|Cytron|651,774,705,1347
+19|7|D-Vision|1115
+19|7|DCE|831
+19|7|DEC|778
+19|7|DK Digital|831,1643,1660
+19|7|DMTech|2173,783
+19|7|DSE|675,833,1152,1483,1730
+19|7|DVD2000|521
+19|7|DVS|672
+19|7|DVX|768
+19|7|Daenyx|872
+19|7|Daewoo|784,869,1169,1172,770,833,872,490,705,714,1483,1906
+19|7|Dalton|1036,1107
+19|7|Dansai|770,1115,783
+19|7|Dantax|539,713,790,723
+19|7|Datsun|1233
+19|7|Daytek|872,1005
+19|7|Dayton|872,1158
+19|7|Decca|770,1115
+19|7|Denon|490,634,2258,1634
+19|7|Denver|672,898,1493,699,778,788,1056,1104,1107,1321,1923
+19|7|Denzel|665
+19|7|Desay|843,1212
+19|7|Dgtec|672
+19|7|DiK|831
+19|7|DiViDo|705
+19|7|Diamond|768,651,790,751,778
+19|7|Dick Smith Electronics|833,1152,1483,1730
+19|7|DigiLogic|713
+19|7|Digihome|713
+19|7|Digital|2173
+19|7|DigitalMax|1738
+19|7|Digitech|1832
+19|7|Digitor|833,1005,651,690,1423
+19|7|Digitrex|672,1004,1056,1100
+19|7|Digix Media|826
+19|7|Dinamic|788
+19|7|Disney|675,1270,831
+19|7|Dragon|831
+19|7|DreamX|1151
+19|7|Dual|713,730,831,884,1023,1115,1530,651,790,665,675,783,1068
+19|7|Durabrand|1023,1127,675,713,831,1530,1003,1502
+19|7|E:max|770,1233,1643,1321
+19|7|ECC|730
+19|7|ESA|821,1268
+19|7|EagleTec|714
+19|7|Eclipse|723,751
+19|7|Electrohome|2116,1003
+19|7|Elfunk|713,884,850
+19|7|Elin|770
+19|7|Elite|1152
+19|7|Ellion|850,1421
+19|7|Elta|672,770,1051,1115,1233,1643,2173,690,788,850,1151
+19|7|Eltax|1233,1321
+19|7|Emerson|591,675,705,821,1268
+19|7|Enterprise|591
+19|7|Entivo|503,539
+19|7|Enzer|784,770,1228
+19|7|EuroLine|675,1115,1233,1643,788
+19|7|F&U|2172
+19|7|Fenner|651
+19|7|Ferguson|695,713,884,898,651,1730
+19|7|Finlux|672,591,741,770,751,783
+19|7|Fintec|1530,1169
+19|7|Firstline|713,869,1530,651,843
+19|7|Fisher|670
+19|7|Funai|675,695,1268,1334
+19|7|Fusion|862
+19|7|GE|522,815,717
+19|7|GFM|675
+19|7|GP Audio|1140
+19|7|GPX|741,699
+19|7|GVG|770,1169
+19|7|Gateway|1077,1158,1073
+19|7|General Electric|717
+19|7|Germatic|1051
+19|7|Global Link|1224
+19|7|Global Solutions|768
+19|7|Global Sphere|1152
+19|7|Go Video|744,715,741,869,1044,1075,833,1158,573,717,783,1099,1304,1483,1730
+19|7|Go Vision|1071
+19|7|GoWell|1643
+19|7|GoldStar|741,869,591
+19|7|Goodmans|713,730,833,1004,1140,1152,1530,651,790,690,723,783,1423,1730,1923
+19|7|Gradiente|490,651
+19|7|Graetz|665
+19|7|Gran Prix|831,898
+19|7|Grandin|713,1233,2173
+19|7|Greenhill|717
+19|7|Grundig|539,551,670,695,713,1004,1416,1643,651,790,705,775,1036,1730,1832
+19|7|Grunkel|770,831,1493,790
+19|7|H & B|713,841,1233,2173,850,1421
+19|7|HCM|788
+19|7|HDT|705
+19|7|HE|730,1493,1163,1923
+19|7|HYD|1233
+19|7|Haaz|1152,751
+19|7|Haier|843
+19|7|Hanseatic|741,790,783
+19|7|Harman/Kardon|582,702,1229
+19|7|Helios|2080,2192
+19|7|Hello Kitty|831
+19|7|Henss|713
+19|7|HiMAX|843
+19|7|Hitachi|573,664,695,713,884,1748,1764,665,1247
+19|7|Hiteker|672,1923
+19|7|Hoeher|713,826,831,1004,1530,2173,651,1224
+19|7|Home Electronics|730,770
+19|7|Home Tech Industries|1643,1107,1224
+19|7|HotMedia|1152
+19|7|Hoyo|665
+19|7|Humax|1500,1588,646
+19|7|Hyundai|768,826,833,1660,783,850,1061,1228
+19|7|IRT|783
+19|7|ISP|695
+19|7|ITT|1233
+19|7|Ingelen|788
+19|7|Ingersol|1023
+19|7|Initial|839,717
+19|7|Inno Hit|713
+19|7|Insignia|675,2095,2428,2596,741,1268
+19|7|Integra|571,1769,627,2147,1634
+19|7|Irradio|646,869,1115,1233,1224
+19|7|JBL|702
+19|7|JDB|730
+19|7|JGC|1530
+19|7|JMB|695
+19|7|JNC|672
+19|7|JSI|1423
+19|7|JVC|558,623,867,1164,1275,1550,1602,2365,503,539,1860
+19|7|Jamo|1036
+19|7|Jaton|665
+19|7|Jeken|699
+19|7|Jensen|1016
+19|7|Jepssen|1250
+19|7|KLH|1020,1149,815,717,790
+19|7|KXD|1321,1923
+19|7|Kansai|1107
+19|7|Kansas Technologies|1233,1530
+19|7|Karcher|783
+19|7|Kawasaki|790
+19|7|Kazuki|1493
+19|7|Kendo|672,713,831,699
+19|7|Kennex|713,770,898
+19|7|Kenwood|490,534
+19|7|KeyPlug|1643
+19|7|Kiiro|770
+19|7|King D'Home|833
+19|7|King Vision|1493,1643
+19|7|Kiss|841,665,1523
+19|7|Kloss|533
+19|7|Koda|1230
+19|7|Konka|1192
+19|7|Koss|651,1061,1423
+19|7|Kreisen|1421
+19|7|LG|591,741,869,1602,1233,2189,790,1906
+19|7|LM|1643
+19|7|Landel|826
+19|7|Lasonic|627,798,789
+19|7|Lawson|768
+19|7|Lazer|2173
+19|7|Lecson|1533
+19|7|Leiker|872
+19|7|Lenco|713,770,651,774,699,778
+19|7|Lenoir|1228
+19|7|Lenoxx|1127,1005,690,838
+19|7|Lexia|768,699
+19|7|Lifetec|831,651,1347
+19|7|Limit|768,1104
+19|7|LiteOn|1058,1656,1158,1416,1738,1440
+19|7|Lodos|713,884
+19|7|Loewe|539,741,511,885
+19|7|Logik|713,884
+19|7|Logitech|2639
+19|7|Logix|705,783
+19|7|Lumatron|695,713,741,833,1115,705,1321,1832
+19|7|Lunatron|741
+19|7|Luxman|573
+19|7|Luxor|713,884,1004,1730
+19|7|MBO|730,690,1730
+19|7|MDS|713,778
+19|7|MEI|790
+19|7|MPX|843
+19|7|Magnasonic|651,675
+19|7|Magnat|1923
+19|7|Magnavox|503,539,646,675,1177,1354,1506,713,1140,821,885,1268
+19|7|Magnex|723
+19|7|Magnum|1382
+19|7|Majestic|1107,1345
+19|7|Manhattan|713,705
+19|7|Manta|1493
+19|7|Marantz|539,2414,503,675
+19|7|Mark|713
+19|7|Marquant|770
+19|7|Matsui|672,695,713,884,1004,651,1730
+19|7|Maxdorf|788
+19|7|Maxent|1347
+19|7|Maxim|713,872
+19|7|Maya|1345
+19|7|McIntosh|1273,1533
+19|7|Mecotek|770
+19|7|Medion|630,741,831,1270,2189,651,774,783,1006,1107,1345,1347,1423
+19|7|Memorex|695,831,1270,2213,690
+19|7|Messiah Entertainment|2396
+19|7|Metronic|690
+19|7|Metz|525,571,713
+19|7|MiCO|723,751,1223
+19|7|Micromaxx|695
+19|7|Micromedia|503,539
+19|7|Micromega|539,1005
+19|7|Microsoft|522,2083,1708
+19|7|Microstar|831
+19|7|Minato|752
+19|7|Minax|713
+19|7|Minerva|705
+19|7|Minoka|770,1115
+19|7|Mintek|839,717
+19|7|Mirror|752
+19|7|Mitsubishi|1521,521,713
+19|7|Mizuda|770,1451
+19|7|Monyka|665
+19|7|Mustek|730,1730
+19|7|Muvid|1493,1643,2173
+19|7|Mx Onda|651,751,1223
+19|7|Mystral|831
+19|7|NAD|741,2572
+19|7|NEC|741,869,1602
+19|7|NFREN|826
+19|7|Naiko|770,1004
+19|7|Neom|1493,1643
+19|7|Nesa|717
+19|7|Neufunk|665
+19|7|Nevir|672,770,831,1660
+19|7|Next Base|826
+19|7|NexxTech|1402
+19|7|Nikkai|1923
+19|7|Nintaus|1051,1202
+19|7|Noblex|1233
+19|7|Norcent|1107,872,1003,1923
+19|7|Nordmende|831,1530,774
+19|7|Noriko|752
+19|7|Nortek|1643,2173
+19|7|Nova|1923
+19|7|Nowa|843
+19|7|Nu-Tec|1493,516,1228
+19|7|Nyko|2340
+19|7|Okano|752
+19|7|Olevia|2331
+19|7|Olidata|672
+19|7|Omni|833,690,778,838,862,1104,1832
+19|7|Onida|1004
+19|7|Onix|838
+19|7|Onkyo|503,1769,627,2147
+19|7|Oopla|1158
+19|7|Oppo|575,1224,2185,2545
+19|7|Optim|843
+19|7|Optimus|525,571
+19|7|Orbit|872,1643
+19|7|Orion|695,713,1233
+19|7|Oritron|651
+19|7|Ormond|713
+19|7|Otic|826
+19|7|P&B|1451
+19|7|Pacific|713,768,831,695,790,759
+19|7|Packard Bell|831
+19|7|Palladium|695,713,1906
+19|7|Palsonic|672,833,852,1056,1321
+19|7|Panasonic|490,503,632,703,1579,1641,1762,1661,2523,571,1362,1462,1490,1834,1905,1908
+19|7|Panda|789,717,1203
+19|7|Pelican Accessories|533
+19|7|Philco|675,790,690,788,862
+19|7|Philips|503,539,2056,2084,646,675,1267,1340,1354,1506,2434,713,1158,2093,2334,2526,854,885,1260
+19|7|Philo|1345
+19|7|Phonotrend|699
+19|7|PianoDisc|1024
+19|7|Pioneer|525,571,142,631,632,1460,1512,1571,2442,1531,1768,490,1965
+19|7|Play It|1643
+19|7|Plu2|850
+19|7|Pointer|784
+19|7|Polaroid|1020,1061,1086
+19|7|Polk Audio|539
+19|7|Portland|770
+19|7|Powerpoint|872,1005
+19|7|Presidian|675,1738
+19|7|Prima|1016,1228
+19|7|Prinz|831
+19|7|Prism|831,705
+19|7|Pro2|1107,1345
+19|7|ProAudio|1394
+19|7|ProCaster|1004
+19|7|ProVision|730,1493,699,778,1107,1163,1321,1923
+19|7|Proceed|672
+19|7|Proline|672,833,1004,1643,1738,2616,651,1068,1483
+19|7|Proscan|522
+19|7|Proson|713
+19|7|Prosonic|1530,699,752,1169
+19|7|Pye|539,646
+19|7|QONIX|1051
+19|7|Qwestar|651
+19|7|RCA|522,571,1769,822,2213,2587,2592,717,790,1022,1132,1913,1965
+19|7|REC|490
+19|7|RadioShack|571
+19|7|Radionette|741,869,1906
+19|7|Radiotone|713
+19|7|Raite|665
+19|7|Realistic|571
+19|7|Red|2213
+19|7|Redstar|770,898,1394,1003,759,763,788,1107,1345,1923
+19|7|Relisys|1347
+19|7|Reoc|768,752
+19|7|Revoy|841,699
+19|7|Rex|838
+19|7|Richmond|1233
+19|7|Rio|869
+19|7|Roadstar|672,713,730,833,898,1051,690,699,1227
+19|7|Rocksonic|789
+19|7|Ronin|872
+19|7|Rotel|623,558
+19|7|Rowa|872,1004,717,516,759,823
+19|7|Rownsonic|789
+19|7|SEG|713,872,884,1530,798,665,763,1483
+19|7|SM Electronic|730,768,1152,690
+19|7|SVA|672,717,752,1105
+19|7|Saba|551,1643,2173,651
+19|7|Sabaki|798
+19|7|Saivod|831,759
+19|7|Salora|741
+19|7|Sampo|752,1321,1347
+19|7|Samsung|490,573,199,820,1044,1075,1470,2069,2329,2369,2489,2556,744,298,1635,1748,2107,2113,2269,899,1932
+19|7|Sansui|695,768,1051,784,751,763,1228,1230,1832
+19|7|Santosh|1115
+19|7|Sanyo|670,695,873,713,675,1228,1334
+19|7|Scan|705,850
+19|7|ScanMagic|730,1730
+19|7|Schaub Lorenz|770,1115,1643,2173,788,1151
+19|7|Schmartz|2367
+19|7|Schneider|646,539,713,831,869,651,774,790,705,783,788
+19|7|Schoentech|713
+19|7|Schwaiger|752
+19|7|Scientific Labs|768
+19|7|Scott|672,1005,1233,1394,2173,651,1036,1423
+19|7|Seeltech|1643,1224,1451
+19|7|Semp|503
+19|7|Sensory Science|1158
+19|7|Shanghai|672
+19|7|Sharp|630,675,752,1256,2250,713,869,2479,2652
+19|7|Sharper Image|1117
+19|7|Sherwood|633,770,1043,1077,741,717
+19|7|Sherwood Newcastle|1077
+19|7|Shinco|717
+19|7|Shinsonic|533,839
+19|7|Siemssen|1382
+19|7|Sigmatek|1005,2139,1224
+19|7|Siltex|1224
+19|7|Silva|898,788
+19|7|Silva Schneider|741,831,869,898
+19|7|SilverCrest|1152,2173
+19|7|Simaudio|885
+19|7|Singer|768,690,751
+19|7|Sistemas|672
+19|7|Skantic|539,713,1003
+19|7|Skymaster|730,768
+19|7|Skyworth|898
+19|7|Sliding|1115
+19|7|Slim Art|784
+19|7|Smart|713,705
+19|7|Sogo|672,1493,2172
+19|7|Sonai|755
+19|7|Sonashi|831
+19|7|Sonic Blue|869,573,715,783,1099
+19|7|Soniq|831
+19|7|Sony|1633,533,864,1033,1070,1431,1516,1536,1533,772,2132,2180,573,630,1433,1824,1981,2043
+19|7|Sound Color|1233
+19|7|Soundmaster|768
+19|7|Soundmax|768
+19|7|Soundwave|713,1530,783
+19|7|Sova|1122
+19|7|Spectra|872
+19|7|Standard|768,831,898,651,788
+19|7|Star Clusters|1152,1227
+19|7|Starlogic|1005
+19|7|Starmedia|1005,1224
+19|7|Strato|1152,1382
+19|7|Strong|713
+19|7|Sunkai|770,850
+19|7|Sunstech|831,2139
+19|7|Sunwood|898,788
+19|7|Superior|1643
+19|7|Superscan|821
+19|7|Supervision|768,1152
+19|7|Supratech|2139,2172,2238
+19|7|Swisstec|2302
+19|7|Sylvania|675,630,821,1268
+19|7|Symphonic|675,821,1268,1334
+19|7|Synn|768
+19|7|Syscom|826
+19|7|Sytech|2139
+19|7|TBoston|2139
+19|7|TCL|2587,1180
+19|7|TCM|741,790
+19|7|TRANS-continents|826,831,833,872,1233,1321
+19|7|TSM|1224
+19|7|TVE|713
+19|7|TYT|705
+19|7|Tamashi|1394
+19|7|Tandberg|713
+19|7|Tangent|1321
+19|7|Targa|741,1227
+19|7|Tatung|770
+19|7|Tchibo|741
+19|7|Teac|571,675,741,768,833,1394,2139,717,790,516,759,1006,1227,1483
+19|7|Tec|898
+19|7|Technica|713,884
+19|7|Technics|490,703,1905
+19|7|Technika|770,831,1115,1530,2302
+19|7|Technisson|1115
+19|7|TechnoStar|1643
+19|7|Technosonic|730,1051,1115
+19|7|Techwood|713,1530
+19|7|Tedelex|768,1004,690,1228
+19|7|Telefunken|551,789,833,790,1483,1832,1923
+19|7|Teletech|713,768,884
+19|7|Tensai|770,651,690
+19|7|Tevion|768,833,898,1382,1660,651,798,1036,1227,1347,1483,1730,1923
+19|7|Textorm|1493
+19|7|Theta Digital|571
+19|7|Thomson|522,117,551,831,511
+19|7|Thule Audio|551
+19|7|Tivo|1503,1512
+19|7|Tokai|898,1233,784,790,665,788
+19|7|Tom-Tec|789,833
+19|7|Top Suxess|1224
+19|7|Toshiba|503,1769,695,1154,1503,1510,1515,1588,2006,2277,1045,1639,2705,573,539
+19|7|Transonic|730,1394
+19|7|Tredex|843
+19|7|Trent|1643
+19|7|Trevi|831
+19|7|TruVision|1451
+19|7|Tsinghua Tongfang|1205
+19|7|UMC|2302
+19|7|US Logic|839
+19|7|Umax|690,1151
+19|7|Unimax|770
+19|7|United|675,695,713,730,826,884,1115,1152,1233,1643,699,788,1228,1832
+19|7|Universum|591,713,741,869,1530,790,1227,1913
+19|7|Uptek|763
+19|7|Urban Concepts|503,539
+19|7|Vecatech|1493
+19|7|Venturer|1769,790
+19|7|Vestel|713,884,1530
+19|7|Vieta|705
+19|7|Viewmaster|862,1224
+19|7|Viewsonic|1530
+19|7|Viore|2553
+19|7|Visual Innovations|2302
+19|7|Vizio|1226,2563
+19|7|Voxson|730,831,774,690
+19|7|Vtrek|2587,1228
+19|7|WIZE|1115
+19|7|Waitec|730,1233,1151,1224
+19|7|Walkvision|717
+19|7|Waltham|713,1530
+19|7|Welkin|831
+19|7|Wellington|713
+19|7|Weltstar|713
+19|7|Wesder|699
+19|7|Wharfedale|713,1115,790,751,752,1832
+19|7|Wilson|831,1233
+19|7|Windsor|713
+19|7|Windy Sam|573
+19|7|Woxter|1005,2139,1151,1224
+19|7|X-View|1233
+19|7|XLogic|768,1152,1228
+19|7|XMS|770,788
+19|7|Xbox|522,2083,1708
+19|7|Xenius|790
+19|7|Xoro|1250
+19|7|YBA|872
+19|7|Yakumo|1004,1056
+19|7|Yamada|872,1004,1158,1416,1493,2139,1056,1151
+19|7|Yamaha|490,539,646,545,497,817,2298,2558,1416,1354
+19|7|Yamakawa|872,665,1104
+19|7|Yukai|730,1730
+19|7|Zenith|503,591,741,869,1906
+19|7|Zeus|784
+19|7|cello|1730
+19|7|cineULTRA|699
+19|7|digiRED|717
+19|7|eBench|1152
+19|7|iLo|1348
+19|7|jWin|1051
+19|7|peeKTon|898,1224
+19|7|upXus|1345
+20|1|Barco|556
+20|1|Epson|833,840
+20|1|Marantz|1154,2445
+20|1|Mitsubishi|868
+20|1|NEC|882,1704
+20|1|Panasonic|1410
+20|1|Runco|603
+20|1|Sanyo|799,893,1649
+20|1|Sharp|491,688,851
+20|1|Sony|834
+20|1|Toshiba|832
+20|1|Yamaha|769,833,839
+21|3|Amino|1481,1673
+21|3|Apple|2615
+21|3|D-Link|1731,2186
+21|3|KoolConnect|1481
+21|3|Linksys|1365
+21|3|Netgear|2036
+21|3|Popcorn Hour|2260
+21|3|Roku|1486,2371
+21|3|Sling Media|2612
+21|3|SureWest|1481
+21|3|Vudu|2298
+21|3|Western Digital|2558
+22|2|Motorola|1982
+22|2|Pace|1982
+22|2|Thomson|1982
+22|3|AMTC|2185
+22|3|Access HD|2185
+22|3|Airlink 101|2491
+22|3|Alpha Digital|2185
+22|3|Apex Digital|2478
+22|3|Artec|2490
+22|3|CASTi|2305
+22|3|Channel Master|2365
+22|3|Coby|2667
+22|3|Coship|2487
+22|3|Daewoo|2338
+22|3|Daytek|2305
+22|3|Digital Stream|2303
+22|3|Dish Network|2470
+22|3|Echostar|2470
+22|3|GE|2360,2450
+22|3|Goodmind|2450
+22|3|Gridlink|2348
+22|3|Insignia|1415
+22|3|Lasonic|2348
+22|3|Magnavox|1563
+22|3|Memorex|2486
+22|3|MicroGEM|2489
+22|3|Philco|1563
+22|3|RCA|2325,2454
+22|3|Samsung|2592
+22|3|Sansonic|2348
+22|3|Sunkey|2695
+22|3|Sylvania|1563
+22|3|Tivax|2185
+22|3|Ventura|2454
+22|3|Venturer|2454
+22|3|Winegard|2454
+22|3|Zenith|1415
+22|3|Zentech|2491
+22|3|Zinwell|2488
+22|4|Dish Network|775
+23|2|ADB|2254
+23|2|AT&T|858
+23|2|Altibox|2030
+23|2|Amino|1481,2482
+23|2|Azteca|2237
+23|2|Chunghwa|1917
+23|2|Cisco|858,2345
+23|2|ClubInternet|2132
+23|2|Kiss|2132
+23|2|KoolConnect|1481
+23|2|Kreatel|2030
+23|2|Mega TV|2683
+23|2|Motorola|1376,858,2030,2378
+23|2|MyLGTV|2682
+23|2|Now TV|2013
+23|2|Orange|2407
+23|2|PCCW|2013
+23|2|Philips|2174
+23|2|PrimeTV|2030
+23|2|Primestar|2030
+23|2|Qtel|1822
+23|2|Sagem|2407
+23|2|Samsung|2174,2407
+23|2|Scientific Atlanta|858,2345
+23|2|SetaBox|1917
+23|2|SureWest|1481
+23|2|T-Home|2132
+23|2|Thomson|2174,2237,2407
+23|2|Verizon|2378
+23|2|Viasat|2030
+23|2|Viken Fibernett|2030
+23|3|ADB|2254,2586
+23|3|AT&T|858
+23|3|Amino|1481,1615,1673,2482
+23|3|Cisco|2345,2517
+23|3|Motorola|858,2378
+23|3|Scientific Atlanta|858,2345,2517
+23|3|Verizon|2378
+23|4|Indovision|856
+23|4|Philips|2176
+23|4|Premiere|2176
+23|4|Thomson|2176
+24|3|ABS|1272
+24|3|Acer|1272
+24|3|Alienware|1272
+24|3|Apple|2615
+24|3|Claritas|1272
+24|3|CyberPower|1272
+24|3|DVICO|2153
+24|3|Daily Media|1272
+24|3|Elonex|1272
+24|3|Emtec|2535
+24|3|Fujitsu Siemens|1272
+24|3|Gateway|1272
+24|3|HP|1272
+24|3|Hewlett Packard|1272
+24|3|Howard Computers|1272
+24|3|Hush|1272
+24|3|Iomega|2270
+24|3|LaCie|2238
+24|3|Linksys|1272
+24|3|Media Center PC|1272
+24|3|Microsoft|2049,1272
+24|3|Mind|1272
+24|3|Niveus Media|1272
+24|3|Northgate|1272
+24|3|Olidata|2270
+24|3|Packard Bell|1272,2238
+24|3|Philips|1272
+24|3|RaidSonic|2238
+24|3|Ricavision|1272
+24|3|Sony|1272
+24|3|Stack 9|1272
+24|3|Systemax|1272
+24|3|TViX|2153
+24|3|Tagar Systems|1272
+24|3|Toshiba|1272
+24|3|Touch|1272
+24|3|Trust|1272
+24|3|VIA Technologies|1272
+24|3|Viewsonic|1272
+24|3|Voodoo|1272
+24|3|Xbox|2049
+24|3|ZT Group|1272
+24|3|iBUYPOWER|1272
+24|3|me2 2270|2535
+24|4|TechniSat|1100
+24|4|Technotrend|1672
+24|7|Microsoft|2083,1708
+25|7|Bang & Olufsen|2696
+25|7|Cambridge Audio|2808
+25|7|Denon|2258
+25|7|Funai|675
+25|7|Insignia|675,2428,2596
+25|7|Integra|1769,2147
+25|7|JVC|2365
+25|7|LG|741,1602
+25|7|Magnavox|675
+25|7|Marantz|2414
+25|7|Microsoft|2083,1708
+25|7|NAD|2572
+25|7|Olevia|2331
+25|7|Onkyo|1769,2147
+25|7|Oppo|2545
+25|7|Panasonic|1641,2523
+25|7|Philips|2084,2434
+25|7|Pioneer|142,2442
+25|7|RCA|1769
+25|7|Samsung|199,298
+25|7|Sharp|2250,2479,2652
+25|7|Sony|1516,2180
+25|7|Sylvania|675
+25|7|Toshiba|1769,1515,2705
+25|7|Viore|2553
+25|7|Vizio|2563
+25|7|Xbox|2083,1708
+25|7|Yamaha|2298
+26|4|SL|740
+26|7|Emerson|675
+26|7|Funai|675
+26|7|GPX|741
+26|7|Grundig|1416
+26|7|Hitachi|1764
+26|7|Humax|1500,1588
+26|7|JGC|1530
+26|7|JVC|623
+26|7|LG|741
+26|7|LiteOn|1416
+26|7|Medion|741
+26|7|NEC|741
+26|7|Nordmende|1530
+26|7|Panasonic|490,1579,1661,2523
+26|7|Philips|1340,539,1158,2093
+26|7|Pioneer|631,1512,1768
+26|7|Prosonic|1530
+26|7|RCA|522
+26|7|SEG|1530
+26|7|Samsung|490,1635,1748,2107
+26|7|Sharp|1256,630
+26|7|Silva Schneider|741
+26|7|Sony|1033,1070,1536,2132
+26|7|Soundwave|1530
+26|7|Sylvania|675
+26|7|TCM|741
+26|7|Targa|741
+26|7|Tchibo|741
+26|7|Technika|1530
+26|7|Thomson|117,551
+26|7|Tivo|1512
+26|7|Toshiba|1503,1510,1588,1639
+26|7|Universum|741
+26|7|Yamada|1416
+26|8|Pioneer|1459
+26|8|Sony|2172
+27|5|AEG|1593
+27|5|Allegro|1137
+27|5|Centrum|1593
+27|5|CineVision|1137
+27|5|Clatronic|1593
+27|5|DSE|1593
+27|5|Daewoo|1137
+27|5|Durabrand|1593
+27|5|Emerson|1593
+27|5|EuroLine|1593
+27|5|Firstline|1137
+27|5|Funai|1593
+27|5|GFM|1593
+27|5|Go Video|1137
+27|5|GoldStar|1137
+27|5|Irradio|1137
+27|5|LG|1137
+27|5|Lunatron|1137
+27|5|Magnavox|1593
+27|5|NEC|1137
+27|5|Panasonic|162,1562
+27|5|Philips|81
+27|5|Presidian|1593
+27|5|RCA|60
+27|5|Radionette|1137
+27|5|Rio|1137
+27|5|Sanyo|104
+27|5|Schneider|1137
+27|5|Sharp|48,1137
+27|5|Silva Schneider|1137
+27|5|Sylvania|1593
+27|5|Symphonic|1593
+27|5|Teac|1593
+27|5|Thomson|320
+27|5|Toshiba|45
+27|5|United|1593
+27|5|Universum|1137
+27|5|Zenith|1137
+27|7|AEG|675
+27|7|Accurian|675
+27|7|Aim|833
+27|7|Akai|675
+27|7|Allegro|869
+27|7|Apex Digital|1061
+27|7|Black Diamond|833
+27|7|Broksonic|695
+27|7|Bush|833
+27|7|Centrum|675
+27|7|CineVision|869,833
+27|7|Clatronic|675
+27|7|DSE|675,833
+27|7|Daewoo|869,833
+27|7|Dick Smith Electronics|833
+27|7|Digitor|833
+27|7|Durabrand|675
+27|7|Emerson|675
+27|7|EuroLine|675
+27|7|Firstline|869
+27|7|Funai|675,695
+27|7|GFM|675
+27|7|Go Video|744,715,741,869,1044,1075,833
+27|7|GoldStar|741
+27|7|Goodmans|833
+27|7|Hitachi|664
+27|7|Hyundai|833
+27|7|Irradio|869
+27|7|JVC|867,1164,1550,1602
+27|7|King D'Home|833
+27|7|LG|741,869
+27|7|LiteOn|1656
+27|7|Lumatron|695,741,833
+27|7|Lunatron|741
+27|7|Magnavox|675
+27|7|Memorex|695
+27|7|Micromaxx|695
+27|7|NEC|869,1602
+27|7|Omni|833
+27|7|Orion|695
+27|7|Palsonic|833
+27|7|Panasonic|1762,490,1579
+27|7|Philips|675,1267,539,646
+27|7|Pioneer|1460,631
+27|7|Polaroid|1061
+27|7|Presidian|675
+27|7|Proline|833
+27|7|RCA|522,822
+27|7|Radionette|869
+27|7|Roadstar|833
+27|7|Samsung|820,1044,1075,2489,744,2113,2269
+27|7|Sansui|695
+27|7|Sanyo|670,873,695
+27|7|Schneider|869
+27|7|Sharp|630,869
+27|7|Silva Schneider|869
+27|7|Sony|864,1033,1070,1431
+27|7|Sylvania|675
+27|7|Symphonic|675
+27|7|TRANS-continents|833
+27|7|Teac|675,833
+27|7|Telefunken|833
+27|7|Tevion|833
+27|7|Thomson|551
+27|7|Tom-Tec|833
+27|7|Toshiba|503,1045,1510
+27|7|United|675
+27|7|Universum|869
+27|7|Zenith|741,869
+28|8|Altec Lansing|2251
+28|8|Bose|1841
+28|8|Philips|2327
+28|8|Polk Audio|2244,2228
+28|8|Yamaha|2455
+28|8|iHome|2435
+28|8|iLive|2013
+28|8|iSymphony|2258
+29|8|Boston Acoustics|2162
+29|8|Insignia|2474
+29|8|Polk Audio|2244
+29|8|Sangean|2165
+29|8|Sony|2320
+30|1|Panasonic|250
+30|5|Panasonic|162
+30|7|Denon|634,1634
+30|7|Finlux|672
+30|7|Harman/Kardon|702
+30|7|Integra|627
+30|7|Irradio|1233
+30|7|JBL|702
+30|7|JVC|623
+30|7|LG|741,2189
+30|7|Marquant|770
+30|7|Medion|2189
+30|7|Onkyo|627
+30|7|Philips|1267,2334,2526
+30|7|Polk Audio|539
+30|7|Rio|869
+30|7|Samsung|298
+30|7|Sanyo|670
+30|7|Sonic Blue|869
+30|7|Sony|1033,1070,2132
+30|7|Thomson|522
+30|7|Toshiba|2006
+30|7|Yamaha|497,817
+30|8|AEG|1389,1390
+30|8|AFK|1389
+30|8|AMW|1563
+30|8|ASCOMTEC|1389
+30|8|Aiwa|1388,1641
+30|8|Akai|1512,1390
+30|8|All-Tel|1390
+30|8|Amphion Media Works|1563
+30|8|Amstrad|1390
+30|8|Anam|1609
+30|8|Apex Digital|1257,1774
+30|8|Audiosonic|1389
+30|8|Audiovox|1390
+30|8|Audioworld|1390
+30|8|Belson|1389
+30|8|Binatone|1389
+30|8|Blue Sky|1390
+30|8|Bose|1229,1629,1933
+30|8|Cambridge Soundworks|1370
+30|8|Cameron|2426
+30|8|Cat|1389
+30|8|Clatronic|1389
+30|8|Coby|1389
+30|8|Curtis|1389
+30|8|Daewoo|1293
+30|8|Dantax|1390
+30|8|Denon|2857,2279,1460
+30|8|Denver|1389
+30|8|Diamond|1390
+30|8|Dual|1390
+30|8|Elta|1390
+30|8|Fisher|1801
+30|8|Gateway|1517
+30|8|Goodmans|1389,1390
+30|8|Grunkel|1390
+30|8|HCM|1390
+30|8|HE|1389
+30|8|Hanseatic|1390
+30|8|Harman/Kardon|1306
+30|8|HitPlus|2483
+30|8|Hitachi|1801
+30|8|Hiteker|1389
+30|8|Home Tech Industries|1389
+30|8|Insignia|1030,2175
+30|8|Integra|1298,135
+30|8|JBL|1306
+30|8|JVC|1374,1495,2040,2239,2331,74,1676
+30|8|KLH|1390
+30|8|KXD|1389
+30|8|Kenwood|1313,1293
+30|8|LG|1293,2197,2284,2676
+30|8|Lenoxx|1389
+30|8|MEI|1390
+30|8|Magnat|1389
+30|8|Magnavox|1514
+30|8|Medion|2197
+30|8|NAD|609
+30|8|Nexius|1390
+30|8|Nikkai|1389
+30|8|Norcent|1389
+30|8|Nova|1389
+30|8|Onkyo|1298,1531,135
+30|8|PJ|1389
+30|8|Palladium|1293,1390
+30|8|Panasonic|1288,1316,1548,1633,1763,1764,2221,2452,2967,1765,1779
+30|8|Philco|1390
+30|8|Philips|1266,2311,2459,1269,1673,1831,2341
+30|8|Pioneer|1384,1123,1284,1459
+30|8|Polk Audio|1289,2270
+30|8|ProVision|1389
+30|8|Proline|1390
+30|8|QONIX|1390
+30|8|Quadro|1389
+30|8|RCA|1609,1390,1511,2041,1459,2426,2490
+30|8|Radionette|1293
+30|8|Redstar|1389
+30|8|Rio|1869
+30|8|Samsung|1295,1500,1868
+30|8|Sanyo|1469,1801
+30|8|Schneider|1390
+30|8|Scott|1389
+30|8|Sherwood|1517,1905
+30|8|Silva Schneider|1390
+30|8|Sonic Blue|1869
+30|8|Sony|1622,1558,1658,1758,1822,1858,2522,1454,1722,1827,1882,2172
+30|8|Targa|1293
+30|8|Teac|1390,1528,1609
+30|8|Technics|1763,1765
+30|8|Technika|2426
+30|8|Telefunken|1389,1390
+30|8|Tevion|1389
+30|8|Thomson|1194
+30|8|Tokai|1390
+30|8|Toshiba|1788
+30|8|United|1390
+30|8|Universum|1609,1390
+30|8|Venturer|1390
+30|8|Vtrek|2426,2483
+30|8|Wharfedale|1390
+30|8|Xenius|1390
+30|8|Yamaha|1331,1375,2061,712
+30|8|Zenith|1293
+31|8|Audiovox|1627
+31|8|JVC|1811
+31|8|Polk Audio|1988
+31|8|Sirius|1627,1811,1987,1988
+31|8|XM|1846
+32|8|Netgear|1785
+32|8|Roku|1828
+33|8|Altec Lansing|1056,2251
+33|8|Apple|1115
+33|8|DLO|1155
+33|8|Logitech|2182
+33|8|Memorex|2119
+33|8|Philips|2327
+33|8|Polk Audio|2228
+34|3|Microsoft|2049
+34|3|Xbox|2049
+34|7|Microsoft|522,2083,1708
+34|7|Sony|533,772
+34|7|Xbox|522,2083,1708
+35|4|Canal+|2657
+35|4|Pace|2657
+36|1|Memorex|1670
+36|1|Olevia|1610
+36|1|Panasonic|250,650,1291
+36|1|Pioneer|679
+36|1|Proscan|1447
+36|1|RCA|1447
+36|1|Samsung|812
+37|1|SEG|1163
+37|1|Sony|1825
+37|1|Viore|2352
+38|1|Akai|812
+38|1|GE|1447
+38|1|Hitachi|1643
+38|1|JVC|653,1601,1774
+38|1|Magnavox|1454
+38|1|Mitsubishi|1250
+38|1|Panasonic|1480,250,650,1291,1650
+38|1|Philips|37,556
+38|1|Pioneer|679
+38|1|Proscan|1447
+38|1|Pye|37
+38|1|RCA|1447
+38|1|Samsung|812,618,1249,1312,1619,2051
+38|1|Sanyo|1142
+38|1|Sony|810,0,1505,1651,1825
+38|1|Thomson|625
+38|1|Toshiba|1524,156,1508
+39|5|JVC|67
+"""#
+}
