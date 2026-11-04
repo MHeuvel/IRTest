@@ -9,17 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Installeer XcodeGen
+      - name: Install XcodeGen
         run: brew install xcodegen
 
-      - name: Genereer Xcode-project
+      - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Bouw (zonder ondertekening)
+      - name: Build (unsigned)
         run: |
           xcodebuild \
-            -project UnityRemote.xcodeproj \
-            -scheme UnityRemote \
+            -project UnityIRedux.xcodeproj \
+            -scheme UnityIRedux \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
@@ -28,13 +28,13 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             build
 
-      - name: Maak IPA
+      - name: Create IPA
         run: |
           mkdir -p Payload
-          cp -R build/Build/Products/Release-iphoneos/UnityRemote.app Payload/
-          zip -r UnityRemote.ipa Payload
+          cp -R build/Build/Products/Release-iphoneos/UnityIRedux.app Payload/
+          zip -r UnityIRedux.ipa Payload
 
       - uses: actions/upload-artifact@v4
         with:
-          name: UnityRemote-ipa
-          path: UnityRemote.ipa
+          name: UnityIRedux-ipa
+          path: UnityIRedux.ipa
