@@ -11,19 +11,38 @@ struct ContentView: View {
     @EnvironmentObject var hardware: HardwareSettings
     @State private var sheet: Sheet?
     @State private var page: PageKind = .remote
+    @State private var learnMode = false
+    @State private var learnTarget: LearnTarget?
+    @State private var editingKey: LearnedKey?
+    @State private var renamingKey: LearnedKey?
+    @State private var newKeyName = ""
+
+    private func toggleLearn() {
+        learnMode.toggle()
+        if learnMode {
+            withAnimation(.easeInOut(duration: 0.2)) { page = .custom }
+        }
+    }
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 Theme.background.ignoresSafeArea()
                 VStack(spacing: 12) {
-                    HeaderCard(sheet: $sheet)
+                    HeaderCard(sheet: $sheet, learnMode: learnMode, onToggleLearn: toggleLearn)
                     if remote.status == .noAccessory {
                         PairBanner()
                     }
                     if let device = store.selected {
-                        CodeBar(device: device, sheet: $sheet)
-                        RemoteContent(device: device, page: $page, width: geo.size.width - 40)
+                        if !device.isLearnedRemote {
+                            CodeBar(device: device, sheet: $sheet)
+                        }
+                        RemoteContent(device: device,
+                                      page: $page,
+                                      width: geo.size.width - 40,
+                                      learnMode: learnMode,
+                                      onAddKey: { learnTarget = LearnTarget(deviceID: device.id, existing: nil) },
+                                      onEditKey: { editingKey = $0 })
                     } else {
                         EmptyState(sheet: $sheet)
                     }
@@ -36,6 +55,7 @@ struct ContentView: View {
         .overlay { NoticeView() }
         .animation(.easeInOut(duration: 0.15), value: remote.notice)
         .preferredColorScheme(.dark)
+        .onChange(of: store.selectedID) { _ in learnMode = false }
         .sheet(item: $sheet) { s in
             switch s {
             case .devices:
@@ -48,6 +68,45 @@ struct ContentView: View {
                     CodePickerView(device: d).environmentObject(store)
                 }
             }
+        }
+        .sheet(item: $learnTarget) { t in
+            LearnKeyView(deviceID: t.deviceID, existing: t.existing)
+                .environmentObject(store)
+                .environmentObject(remote)
+        }
+        .confirmationDialog(editingKey?.name ?? "",
+                            isPresented: Binding(get: { editingKey != nil },
+                                                 set: { if !$0 { editingKey = nil } }),
+                            titleVisibility: .visible) {
+            Button("Relearn") {
+                if let k = editingKey, let d = store.selected {
+                    learnTarget = LearnTarget(deviceID: d.id, existing: k)
+                }
+            }
+            Button("Rename") {
+                if let k = editingKey {
+                    newKeyName = k.name
+                    renamingKey = k
+                }
+            }
+            Button("Delete", role: .destructive) {
+                if let k = editingKey, let d = store.selected {
+                    store.deleteKey(device: d.id, key: k.id)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .alert("Rename key",
+               isPresented: Binding(get: { renamingKey != nil },
+                                    set: { if !$0 { renamingKey = nil } })) {
+            TextField("Name", text: $newKeyName)
+            Button("Save") {
+                if let k = renamingKey, let d = store.selected {
+                    store.renameKey(device: d.id, key: k.id, to: newKeyName)
+                }
+                renamingKey = nil
+            }
+            Button("Cancel", role: .cancel) { renamingKey = nil }
         }
     }
 }
@@ -74,6 +133,8 @@ struct HeaderCard: View {
     @EnvironmentObject var store: DeviceStore
     @EnvironmentObject var remote: RemoteController
     @Binding var sheet: Sheet?
+    let learnMode: Bool
+    let onToggleLearn: () -> Void
 
     private var statusColor: Color {
         switch remote.status {
@@ -92,12 +153,12 @@ struct HeaderCard: View {
     }
 
     private var subtitle: String {
-        if let d = store.selected { return "\(d.brand) · \(d.typeInfo.name)" }
+        if let d = store.selected { return d.subtitle }
         return statusText
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Circle().fill(statusColor).frame(width: 10, height: 10)
             Menu {
                 ForEach(store.devices) { d in
@@ -124,6 +185,17 @@ struct HeaderCard: View {
                 .contentShape(Rectangle())
             }
             Spacer()
+            if store.selected != nil {
+                Button { onToggleLearn() } label: {
+                    Image(systemName: "dot.radiowaves.left.and.right")
+                        .font(.system(size: 19))
+                        .foregroundColor(learnMode ? .white : .gray)
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(learnMode ? Color.blue : Color.clear))
+                        .contentShape(Circle())
+                }
+                .buttonStyle(PressStyle())
+            }
             Button { sheet = .devices } label: {
                 Image(systemName: "gearshape")
                     .font(.system(size: 21))
@@ -150,7 +222,7 @@ struct PairBanner: View {
                 .font(.system(size: 14))
                 .foregroundColor(.white)
             Spacer()
-            Button { remote.showPicker() } label: {
+            Button { remote.pairOrConnect() } label: {
                 Text("Pair / connect")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
@@ -246,6 +318,9 @@ struct RemoteContent: View {
     let device: Device
     @Binding var page: PageKind
     let width: CGFloat
+    let learnMode: Bool
+    let onAddKey: () -> Void
+    let onEditKey: (LearnedKey) -> Void
 
     private var layout: LayoutKind { device.typeInfo.layout }
     private var pages: [PageKind] { layout.pages }
@@ -278,21 +353,37 @@ struct RemoteContent: View {
             }
     }
 
-    private var pageBody: some View {
+    private var customPage: some View {
+        CustomPage(device: device,
+                   learnMode: learnMode,
+                   send: { key in remote.sendLearned(key.signal, label: "\(key.name) · \(device.name)") },
+                   onAdd: onAddKey,
+                   onEdit: onEditKey)
+    }
+
+    private var standardPage: some View {
         PageView(layout: layout, page: active, width: width, press: press, home: homeKey)
     }
 
     var body: some View {
         VStack(spacing: 12) {
             VStack(spacing: 12) {
-                HStack(spacing: 10) {
-                    PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
-                    PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
-                    PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+                if !device.isLearnedRemote {
+                    HStack(spacing: 10) {
+                        PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
+                        PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
+                        PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+                    }
                 }
-                ViewThatFits(in: .vertical) {
-                    pageBody
-                    ScrollView { pageBody }
+                Group {
+                    if active == .custom {
+                        ScrollView { customPage }
+                    } else {
+                        ViewThatFits(in: .vertical) {
+                            standardPage
+                            ScrollView { standardPage }
+                        }
+                    }
                 }
                 .id(active)
                 .transition(.opacity)
