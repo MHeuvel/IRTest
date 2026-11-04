@@ -10,9 +10,9 @@ struct DevicesView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("Apparaten") {
+                Section("Devices") {
                     if store.devices.isEmpty {
-                        Text("Nog geen apparaten").foregroundColor(.secondary)
+                        Text("No devices yet").foregroundColor(.secondary)
                     }
                     ForEach(store.devices) { d in
                         Button {
@@ -36,34 +36,34 @@ struct DevicesView: View {
                             Button(role: .destructive) {
                                 store.remove(d.id)
                             } label: {
-                                Label("Verwijder", systemImage: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                             Button {
                                 renameTarget = d
                                 newName = d.name
                             } label: {
-                                Label("Naam", systemImage: "pencil")
+                                Label("Rename", systemImage: "pencil")
                             }
                             .tint(.blue)
                         }
                     }
                     Button { showAdd = true } label: {
-                        Label("Apparaat toevoegen", systemImage: "plus.circle.fill")
+                        Label("Add device", systemImage: "plus.circle.fill")
                     }
                 }
-                Section("Instellingen") {
+                Section("Settings") {
                     NavigationLink {
                         SettingsView()
                     } label: {
-                        Label("Hardware, verbinding en log", systemImage: "gearshape")
+                        Label("Hardware, connection and log", systemImage: "gearshape")
                     }
                 }
             }
-            .navigationTitle("Apparaten")
+            .navigationTitle("Devices")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Klaar") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
             .sheet(isPresented: $showAdd) {
@@ -73,22 +73,22 @@ struct DevicesView: View {
                 })
                 .environmentObject(store)
             }
-            .alert("Naam wijzigen",
+            .alert("Rename device",
                    isPresented: Binding(get: { renameTarget != nil },
                                         set: { if !$0 { renameTarget = nil } })) {
-                TextField("Naam", text: $newName)
-                Button("Bewaar") {
+                TextField("Name", text: $newName)
+                Button("Save") {
                     if let t = renameTarget { store.rename(t.id, to: newName) }
                     renameTarget = nil
                 }
-                Button("Annuleer", role: .cancel) { renameTarget = nil }
+                Button("Cancel", role: .cancel) { renameTarget = nil }
             }
         }
         .preferredColorScheme(.dark)
     }
 }
 
-// MARK: - Apparaat toevoegen: type, merk, naam
+// MARK: - Add device: type, brand, name
 
 struct AddDeviceView: View {
     let onFinished: () -> Void
@@ -116,18 +116,18 @@ struct TypeListView: View {
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(t.name)
-                    Text("\(Catalog.brands(for: t.id).count) merken")
+                    Text("\(Catalog.brands(for: t.id).count) brands")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
         }
-        .navigationTitle("Type apparaat")
+        .navigationTitle("Device type")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $search)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Annuleer") { onFinished() }
+                Button("Cancel") { onFinished() }
             }
         }
     }
@@ -172,15 +172,15 @@ struct NameDeviceView: View {
 
     var body: some View {
         Form {
-            Section("Naam") {
-                TextField("Naam", text: $name)
+            Section("Name") {
+                TextField("Name", text: $name)
             }
             Section {
                 Text("\(brand) · \(type.name) · \(Catalog.codes(type: type.id, brand: brand).count) codes")
                     .foregroundColor(.secondary)
             }
             Section {
-                Button("Toevoegen") {
+                Button("Add") {
                     let trimmed = name.trimmingCharacters(in: .whitespaces)
                     let finalName = trimmed.isEmpty ? "\(brand) \(type.name)" : trimmed
                     store.add(Device(name: finalName, type: type.id, brand: brand))
@@ -188,7 +188,7 @@ struct NameDeviceView: View {
                 }
             }
         }
-        .navigationTitle("Naam")
+        .navigationTitle("Name")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if name.isEmpty { name = "\(brand) \(type.name)" }
@@ -196,7 +196,7 @@ struct NameDeviceView: View {
     }
 }
 
-// MARK: - Code kiezen
+// MARK: - Choose code
 
 struct CodePickerView: View {
     @EnvironmentObject var store: DeviceStore
@@ -227,7 +227,7 @@ struct CodePickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Klaar") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -235,7 +235,7 @@ struct CodePickerView: View {
     }
 }
 
-// MARK: - Instellingen en log
+// MARK: - Settings and log
 
 struct SettingsView: View {
     @EnvironmentObject var remote: RemoteController
@@ -248,44 +248,51 @@ struct SettingsView: View {
 
     private var statusText: String {
         switch remote.status {
-        case .noAccessory: return "Geen apparaat"
-        case .accessoryFound: return "Gevonden, niet verbonden"
-        case .connected: return "Verbonden"
+        case .noAccessory: return "No unit"
+        case .accessoryFound: return "Found, not connected"
+        case .connected: return "Connected"
         }
     }
 
     var body: some View {
         Form {
-            Section(header: Text("UnityRemote-apparaat"),
-                    footer: Text("Het chiptype hoort bij het apparaat en wordt per apparaat onthouden. Gondar II is de enige geteste chip.")) {
+            Section(header: Text("UnityRemote unit"),
+                    footer: Text("The chip type belongs to the unit and is remembered per unit. Gondar II is the only chip tested so far.")) {
                 if remote.accessoryName.isEmpty {
-                    Text("Geen apparaat gevonden").foregroundColor(.secondary)
+                    Text("No unit found").foregroundColor(.secondary)
                 } else {
-                    LabeledContent("Naam", value: remote.accessoryName)
-                    LabeledContent("Versie", value: remote.accessoryInfo)
+                    LabeledContent("Name", value: remote.accessoryName)
+                    LabeledContent("Version", value: remote.accessoryInfo)
                 }
                 Picker("Chip", selection: chipBinding) {
                     ForEach(Chip.allCases) { Text($0.title).tag($0) }
                 }
             }
-            Section("Verbinding") {
+            Section("Connection") {
                 LabeledContent("Status", value: statusText)
-                Button("Verbind opnieuw") { remote.reconnect() }
-                Button("Bluetooth-kiezer") { remote.showPicker() }
+                Button("Reconnect") { remote.reconnect() }
+                Button("Pair / connect UnityRemote") { remote.showPicker() }
+            }
+            Section("Experimental") {
+                NavigationLink {
+                    LearnTestView()
+                } label: {
+                    Text("Learning test")
+                }
             }
             Section("Log") {
                 NavigationLink {
                     LogView()
                 } label: {
-                    Text("Log bekijken")
+                    Text("View log")
                 }
             }
-            Section("Over") {
-                Text("UnityRemote testapp, versie 0.4")
+            Section("About") {
+                Text("UnityIRedux 0.5")
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Instellingen")
+        .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -309,11 +316,51 @@ struct LogView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Wis") { remote.log.removeAll() }
+                Button("Clear") { remote.log.removeAll() }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Kopieer") { UIPasteboard.general.string = remote.log.joined(separator: "\n") }
+                Button("Copy") { UIPasteboard.general.string = remote.log.joined(separator: "\n") }
             }
         }
+    }
+}
+
+// MARK: - Learning test (experimental)
+
+struct LearnTestView: View {
+    @EnvironmentObject var remote: RemoteController
+    @State private var skip = 0
+
+    var body: some View {
+        Form {
+            Section(footer: Text("Experimental. Hold the original remote less than 1 cm from the UnityRemote's learn receiver (next to its flashing LED), tap Start learning, then press one key on the original remote once.")) {
+                Text(remote.learnStatus)
+                Button("Start learning") { remote.startLearning() }
+                    .disabled(remote.status != .connected)
+            }
+            Section("Learned data") {
+                if remote.learnedData.isEmpty {
+                    Text("Nothing learned yet").foregroundColor(.secondary)
+                } else {
+                    Text("\(remote.learnedData.count) bytes").foregroundColor(.secondary)
+                    Text(hex(remote.learnedData))
+                        .font(.system(size: 12, design: .monospaced))
+                        .textSelection(.enabled)
+                    Stepper("Skip first bytes: \(skip)", value: $skip, in: 0...6)
+                    Button("Replay learned data") { remote.replayLearned(skip: skip) }
+                        .disabled(remote.status != .connected)
+                    Button("Copy learned data") { UIPasteboard.general.string = hex(remote.learnedData) }
+                }
+            }
+            Section("Log") {
+                NavigationLink {
+                    LogView()
+                } label: {
+                    Text("View log")
+                }
+            }
+        }
+        .navigationTitle("Learning test")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
