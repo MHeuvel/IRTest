@@ -2,7 +2,7 @@ import Foundation
 
 struct CodeEntry: Hashable {
     let code: Int
-    let base: Int      // basistype (1...11) dat in het IR-commando meegaat
+    let base: Int      // base type (1...11) that goes into the IR command
 }
 
 enum LayoutKind {
@@ -18,7 +18,7 @@ enum LayoutKind {
 }
 
 struct DeviceType: Identifiable, Hashable {
-    let id: Int        // apparaattype uit UnityRemote (1...39)
+    let id: Int        // device type from UnityRemote (1...39)
     let name: String
     let layout: LayoutKind
 }
@@ -26,20 +26,20 @@ struct DeviceType: Identifiable, Hashable {
 enum Catalog {
     static let types: [DeviceType] = {
         let raw: [(Int, String, LayoutKind)] = [
-            (1, "Versterker", .audio), (2, "Kabel", .tv), (3, "Kabel + opname", .tv),
-            (4, "CD-speler", .disc), (5, "Domotica", .audio), (6, "Laserdisc", .disc),
-            (7, "Audio-accessoire", .audio), (8, "Video-accessoire", .tv), (9, "Receiver", .audio),
-            (10, "Satelliet", .tv), (11, "Satelliet + opname", .tv), (12, "TV", .tv),
-            (13, "TV + DVD", .tv), (14, "TV + video", .tv), (15, "TV + DVD + video", .tv),
-            (16, "Videorecorder", .disc), (17, "DVD", .disc), (18, "DVD-recorder", .disc),
-            (19, "Harddiskrecorder (PVR)", .tv), (20, "Beamer", .tv), (21, "Digitale mediaspeler", .tv),
-            (22, "Digitale decoder", .tv), (23, "IPTV", .tv), (24, "Mediacenter", .tv),
-            (25, "DVD/BluRay/HD", .disc), (26, "DVD + opname", .disc), (27, "DVD + video", .disc),
-            (28, "Dockingstation", .audio), (29, "HD Radio", .audio), (30, "Home cinema set", .audio),
-            (31, "Satellietradio", .audio), (32, "Digitale audiospeler", .audio),
-            (33, "Dockingstation (audio)", .audio), (34, "Spelcomputer", .tv), (35, "IPTV + opname", .tv),
-            (36, "HDTV", .tv), (37, "Draagbare tv", .tv), (38, "Projectie-tv", .tv),
-            (39, "Video + opname", .disc)
+            (1, "Amplifier", .audio), (2, "Cable", .tv), (3, "Cable + recorder", .tv),
+            (4, "CD player", .disc), (5, "Home automation", .audio), (6, "Laserdisc", .disc),
+            (7, "Audio accessory", .audio), (8, "Video accessory", .tv), (9, "Receiver", .audio),
+            (10, "Satellite", .tv), (11, "Satellite + recorder", .tv), (12, "TV", .tv),
+            (13, "TV + DVD", .tv), (14, "TV + VCR", .tv), (15, "TV + DVD + VCR", .tv),
+            (16, "VCR", .disc), (17, "DVD", .disc), (18, "DVD recorder", .disc),
+            (19, "PVR / hard disk recorder", .tv), (20, "Projector", .tv), (21, "Digital media player", .tv),
+            (22, "Digital terminal adapter", .tv), (23, "IPTV", .tv), (24, "Media center", .tv),
+            (25, "DVD/Blu-ray/HD", .disc), (26, "DVD + recorder", .disc), (27, "DVD + VCR", .disc),
+            (28, "Docking station", .audio), (29, "HD Radio", .audio), (30, "Home theater in a box", .audio),
+            (31, "Satellite radio", .audio), (32, "Digital audio player", .audio),
+            (33, "Docking station (audio)", .audio), (34, "Game console", .tv), (35, "IPTV + recorder", .tv),
+            (36, "HDTV", .tv), (37, "Portable TV", .tv), (38, "Rear projection TV", .tv),
+            (39, "VCR + recorder", .disc)
         ]
         let all = raw.map { DeviceType(id: $0.0, name: $0.1, layout: $0.2) }
         let priority = [12, 25, 17, 10, 1, 9, 30, 2, 4]
