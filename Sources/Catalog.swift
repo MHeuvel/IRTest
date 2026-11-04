@@ -6,13 +6,14 @@ struct CodeEntry: Hashable {
 }
 
 enum LayoutKind {
-    case tv, disc, audio
+    case tv, disc, audio, learned
 
     var pages: [PageKind] {
         switch self {
-        case .tv: return [.remote, .numbers, .media]
-        case .disc: return [.media, .remote, .numbers]
-        case .audio: return [.remote, .numbers, .media]
+        case .tv: return [.remote, .numbers, .media, .custom]
+        case .disc: return [.media, .remote, .numbers, .custom]
+        case .audio: return [.remote, .numbers, .media, .custom]
+        case .learned: return [.custom]
         }
     }
 }
@@ -26,6 +27,7 @@ struct DeviceType: Identifiable, Hashable {
 enum Catalog {
     static let types: [DeviceType] = {
         let raw: [(Int, String, LayoutKind)] = [
+            (0, "Learned remote", .learned),
             (1, "Amplifier", .audio), (2, "Cable", .tv), (3, "Cable + recorder", .tv),
             (4, "CD player", .disc), (5, "Home automation", .audio), (6, "Laserdisc", .disc),
             (7, "Audio accessory", .audio), (8, "Video accessory", .tv), (9, "Receiver", .audio),
@@ -42,7 +44,7 @@ enum Catalog {
             (39, "VCR + recorder", .disc)
         ]
         let all = raw.map { DeviceType(id: $0.0, name: $0.1, layout: $0.2) }
-        let priority = [12, 25, 17, 10, 1, 9, 30, 2, 4]
+        let priority = [0, 12, 25, 17, 10, 1, 9, 30, 2, 4]
         let first = priority.compactMap { id in all.first { $0.id == id } }
         let rest = all.filter { !priority.contains($0.id) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -50,7 +52,7 @@ enum Catalog {
     }()
 
     static func type(_ id: Int) -> DeviceType {
-        types.first { $0.id == id } ?? types[0]
+        types.first { $0.id == id } ?? DeviceType(id: 12, name: "TV", layout: .tv)
     }
 
     private static let table: [Int: [String: [CodeEntry]]] = {
