@@ -79,7 +79,7 @@ final class DeviceStore: ObservableObject {
     }
 }
 
-// Chiptype per UnityRemote-apparaat (op serienummer of naam)
+// Chip type per UnityRemote unit (by serial number or name)
 final class HardwareSettings: ObservableObject {
     @Published private(set) var chips: [String: String]
 
