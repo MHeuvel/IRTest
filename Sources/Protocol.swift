@@ -1,10 +1,10 @@
 import Foundation
 
-// Protocol afgeleid uit UnityRemote 1.7.1 (zie PROTOCOL_NOTES.md).
+// Protocol derived from UnityRemote 1.7.1.
 //
 // Frame:  AA 55 | LEN | CMD | payload... | CHK
-//   LEN = aantal bytes na LEN (CMD + payload + CHK)
-//   CHK = bitwise NOT van de XOR van alle voorgaande bytes (gemeten op het apparaat)
+//   LEN = number of bytes after LEN (CMD + payload + CHK)
+//   CHK = bitwise NOT of the XOR of all preceding bytes (measured on the device)
 //
 // IR-passthrough (CMD 0x01), payload (10 bytes):
 //   chipID[4] | 05 | 01 | V_hi | V_lo | keyNumber | 80
@@ -29,7 +29,7 @@ enum Chip: String, CaseIterable, Identifiable {
         }
     }
 
-    // keyCode (1...80) -> keyNumber op de lijn; 0 = niet ondersteund
+    // keyCode (1...80) -> key number on the wire; 0 = not supported
     func keyNumber(_ keyCode: Int) -> Int {
         guard (1...80).contains(keyCode) else { return 0 }
         switch self {
@@ -82,34 +82,34 @@ enum Packet {
 }
 
 extension Packet {
-    // Vertaalt bekende frames naar leesbare tekst
+    // Translates known frames into readable text
     static func describe(_ f: [UInt8]) -> String {
-        guard f.count >= 5 else { return "Te kort frame" }
+        guard f.count >= 5 else { return "Frame too short" }
         let data = Array(f[4..<(f.count - 1)])
         switch f[3] {
         case 0xA0 where data.count >= 6:
             let fw = "\(data[0]).\(data[1]).\(data[2])"
             let hw = "\(data[3]).\(data[4]).\(data[5])"
             let rest = String(bytes: data.dropFirst(6), encoding: .ascii) ?? ""
-            return "Versie: firmware \(fw), hardware \(hw), rest \"\(rest)\""
+            return "Version: firmware \(fw), hardware \(hw), rest \"\(rest)\""
         case 0x20 where data.count >= 2:
-            let names: [Int: String] = [1: "ongeldig commando", 2: "ongeldige parameter", 3: "ongeldige lengte",
-                                        4: "ongeldige framing", 5: "checksum-fout", 6: "timeout in chip",
-                                        7: "ongeldige resources"]
+            let names: [Int: String] = [1: "invalid command", 2: "invalid parameter", 3: "invalid length",
+                                        4: "invalid framing", 5: "checksum error", 6: "chip timeout",
+                                        7: "invalid resources"]
             let st = Int(data[1])
             let text: String
             if st == 0 {
                 text = "status 00 (OK?)"
             } else if data[0] == 0x01 && st == 6 {
-                text = "status 06 (tussenstap, komt bij elke IR-toets voor)"
+                text = "status 06 (intermediate step, occurs on every IR key)"
             } else if data[0] == 0x01 && st == 7 {
-                text = "status 07 (chip bezig, toets mogelijk niet verstuurd)"
+                text = "status 07 (chip busy, key possibly not sent)"
             } else {
-                text = "status \(String(format: "%02X", st)) = \(names[st] ?? "onbekend")"
+                text = "status \(String(format: "%02X", st)) = \(names[st] ?? "unknown")"
             }
-            return "Antwoord op CMD \(String(format: "%02X", data[0])): \(text)"
+            return "Response to CMD \(String(format: "%02X", data[0])): \(text)"
         default:
-            return "Onbekend frametype \(String(format: "%02X", f[3]))"
+            return "Unknown frame type \(String(format: "%02X", f[3]))"
         }
     }
 }
