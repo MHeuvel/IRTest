@@ -15,10 +15,10 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     @Published var accessoryName: String = ""
     @Published var accessoryInfo: String = ""
 
-    // Learning test (experimental)
+    // Learning
     @Published var learnStatus: String = "Idle"
     @Published var learnedData: [UInt8] = []
-    private var learnWaiting = false
+    @Published var isLearning = false
 
     private let hardware: HardwareSettings
     private var session: EASession?
@@ -28,6 +28,9 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     private var irQueue: [(bytes: [UInt8], label: String)] = []
     private var irBusy = false
     private var busyTimer: DispatchWorkItem?
+    private var learnTimer: DispatchWorkItem?
+    private var monitorTimer: Timer?
+    private var openFailures = 0
 
     var chip: Chip { hardware.chip(for: accessoryKey) }
 
@@ -39,7 +42,14 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
                                                name: .EAAccessoryDidConnect, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(accessoryChanged(_:)),
                                                name: .EAAccessoryDidDisconnect, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appBecameActive),
+                                               name: UIApplication.didBecomeActiveNotification, object: nil)
         refresh(autoOpen: true)
+        // While there is no session, check every 2 seconds whether the unit is back
+        monitorTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            guard let self = self, self.session == nil else { return }
+            self.refresh(autoOpen: true, quiet: true)
+        }
     }
 
     // MARK: Log and notice
@@ -69,6 +79,10 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     // MARK: Accessories and session
 
+    @objc private func appBecameActive() {
+        if session == nil { refresh(autoOpen: true, quiet: true) }
+    }
+
     @objc private func accessoryChanged(_ note: Notification) {
         let event = note.name == .EAAccessoryDidConnect ? "connected" : "disconnected"
         if let acc = note.userInfo?[EAAccessoryKey] as? EAAccessory {
@@ -84,11 +98,13 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
     }
 
-    func refresh(autoOpen: Bool) {
+    func refresh(autoOpen: Bool, quiet: Bool = false) {
         let all = EAAccessoryManager.shared().connectedAccessories
-        addLog("Scan: \(all.count) accessory(ies)")
-        for a in all {
-            addLog("- \(a.name) | \(a.manufacturer) | model \(a.modelNumber) | serial \(a.serialNumber) | fw \(a.firmwareRevision) | hw \(a.hardwareRevision) | \(a.protocolStrings.joined(separator: ","))")
+        if !quiet {
+            addLog("Scan: \(all.count) accessory(ies)")
+            for a in all {
+                addLog("- \(a.name) | \(a.manufacturer) | model \(a.modelNumber) | serial \(a.serialNumber) | fw \(a.firmwareRevision) | hw \(a.hardwareRevision) | \(a.protocolStrings.joined(separator: ","))")
+            }
         }
         if session != nil { return }
         if let acc = candidate() {
@@ -97,7 +113,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
                 self.accessoryKey = key
                 self.accessoryName = acc.name
                 self.accessoryInfo = "firmware \(acc.firmwareRevision) · hardware \(acc.hardwareRevision)"
-                self.status = .accessoryFound
+                if self.status == .noAccessory { self.status = .accessoryFound }
             }
             if autoOpen { open(acc) }
         } else {
@@ -110,6 +126,16 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         refresh(autoOpen: true)
     }
 
+    // "Pair / connect": use a unit iOS already knows; only show the system picker when none is found
+    func pairOrConnect() {
+        if candidate() != nil {
+            addLog("Unit already known to iOS: connecting")
+            if session == nil { refresh(autoOpen: true) }
+            return
+        }
+        showPicker()
+    }
+
     func showPicker() {
         EAAccessoryManager.shared().showBluetoothAccessoryPicker(withNameFilter: nil) { error in
             self.addLog(error.map { "Picker: error \($0.localizedDescription)" } ?? "Picker: done")
@@ -119,9 +145,11 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     private func open(_ accessory: EAAccessory) {
         guard let s = EASession(accessory: accessory, forProtocol: Self.protocolString) else {
-            addLog("Could not open EASession")
+            openFailures += 1
+            if openFailures <= 3 { addLog("Could not open EASession (attempt \(openFailures)); retrying") }
             return
         }
+        openFailures = 0
         session = s
         gotReply = false
         for stream in [s.inputStream, s.outputStream] {
@@ -145,7 +173,8 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         rxBuffer.removeAll()
         irQueue.removeAll()
         irBusy = false
-        learnWaiting = false
+        isLearning = false
+        learnTimer?.cancel()
         busyTimer?.cancel()
         busyTimer = nil
         DispatchQueue.main.async {
@@ -176,6 +205,26 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             return
         }
         enqueueIR(p, label: "\(key.title) · \(device.brand) \(entry.code) · type \(entry.base) · \(chip.title)")
+    }
+
+    // Replay of a learned signal (00 00 LL + body):
+    // AA 55 (L+11) 01 | chip(4) | (L+4) | 10 | 00 00 90 | signal(L) | CHK
+    func sendLearned(_ signal: [UInt8], label: String) {
+        clearNotice()
+        guard status == .connected else {
+            addLog("Not connected: \(label) not sent")
+            showNotice("Not connected")
+            warn()
+            return
+        }
+        guard signal.count >= 3, signal.count <= 244 else {
+            addLog("Learned signal has an invalid size (\(signal.count) bytes)")
+            showNotice("Invalid signal")
+            warn()
+            return
+        }
+        let payload = chip.idBytes + [UInt8(signal.count + 4), 0x10, 0x00, 0x00, 0x90] + signal
+        enqueueIR(Packet.build(cmd: 0x01, payload: payload), label: "LEARNED \(label) · \(signal.count) bytes")
     }
 
     private func enqueueIR(_ bytes: [UInt8], label: String) {
@@ -209,10 +258,18 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
     }
 
-    // MARK: Learning test (experimental)
+    // MARK: Learning
     //
     // Begin learning:  AA 55 0A 01 | chip(4) | 03 | 12 | 00 00 | CHK
-    // Replay learned:  AA 55 (L+11) 01 | chip(4) | (L+4) | 10 | 00 00 90 | data(L) | CHK
+    // The chip answers 06 first, then (after a key press) status 00 with the data,
+    // or an error status when learning times out.
+
+    func resetLearn() {
+        learnTimer?.cancel()
+        isLearning = false
+        learnedData = []
+        learnStatus = "Idle"
+    }
 
     func startLearning() {
         clearNotice()
@@ -222,42 +279,42 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             return
         }
         learnedData = []
-        learnWaiting = true
-        learnStatus = "Waiting for a key… hold the original remote less than 1 cm from the learn receiver and press one key once."
+        isLearning = true
+        learnStatus = "Waiting for a key…"
         let p = Packet.build(cmd: 0x01, payload: chip.idBytes + [0x03, 0x12, 0x00, 0x00])
         send(p, label: "LEARN begin · \(chip.title)")
+        learnTimer?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self = self, self.isLearning else { return }
+            self.isLearning = false
+            self.learnStatus = "No response. Try again."
+            self.addLog("LEARN: no response after 60 s")
+        }
+        learnTimer = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: work)
     }
 
-    func replayLearned(skip: Int) {
-        guard status == .connected else {
-            learnStatus = "Not connected"
-            warn()
-            return
-        }
-        let body = Array(learnedData.dropFirst(min(max(skip, 0), learnedData.count)))
-        guard !body.isEmpty, body.count <= 200 else {
-            learnStatus = "Nothing to replay"
-            warn()
-            return
-        }
-        let payload = chip.idBytes + [UInt8(body.count + 4), 0x10, 0x00, 0x00, 0x90] + body
-        let p = Packet.build(cmd: 0x01, payload: payload)
-        send(p, label: "LEARN replay · \(body.count) bytes (skipped \(skip))")
+    func cancelLearning() {
+        learnTimer?.cancel()
+        isLearning = false
+        if learnedData.isEmpty { learnStatus = "Idle" }
     }
 
     private func handleLearnFrame(_ f: [UInt8]) {
         // Response frame: AA 55 LEN 20 | 01 | status | data... | CHK
-        guard learnWaiting, f.count >= 7, f[3] == 0x20, f[4] == 0x01 else { return }
+        guard isLearning, f.count >= 7, f[3] == 0x20, f[4] == 0x01 else { return }
         let st = f[5]
         let data = Array(f[6..<(f.count - 1)])
         addLog("LEARN response: status \(String(format: "%02X", st)), \(data.count) data byte(s)")
         if st == 0x00 && data.count > 2 {
+            learnTimer?.cancel()
             learnedData = data
             learnStatus = "Learned \(data.count) bytes"
-            learnWaiting = false
+            isLearning = false
         } else if st != 0x00 && st != 0x06 {
-            learnStatus = "Learning failed (status \(String(format: "%02X", st)))"
-            learnWaiting = false
+            learnTimer?.cancel()
+            learnStatus = "Learning failed or timed out (status \(String(format: "%02X", st)))"
+            isLearning = false
         }
     }
 
@@ -301,7 +358,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
                         DispatchQueue.main.async { self.gotReply = true }
                         handleLearnFrame(f)
                         // Final response of an IR command: 20 | 01 | 00 | ...
-                        if f.count >= 7, f[3] == 0x20, f[4] == 0x01, f[5] == 0x00 { finishIR() }
+                        if !isLearning, f.count >= 7, f[3] == 0x20, f[4] == 0x01, f[5] == 0x00 { finishIR() }
                     }
                 }
             }
