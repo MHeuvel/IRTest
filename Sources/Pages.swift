@@ -7,7 +7,7 @@ enum PageKind: String, Identifiable {
     var title: String {
         switch self {
         case .remote: return "Remote"
-        case .numbers: return "Cijfers"
+        case .numbers: return "Numbers"
         case .media: return "Media"
         }
     }
@@ -46,12 +46,14 @@ struct MainPage: View {
     let spec: MainSpec
     let width: CGFloat
     let press: (RemoteKey) -> Void
+    var home: Bool = false
 
     var body: some View {
         let cap = min(76, width * 0.2)
         let pad = min(230, width - 2 * cap - 16)
+        let row1 = home ? spec.row1.map { $0 == K.input ? K.home : $0 } : spec.row1
         VStack(spacing: 14) {
-            PillRow(keys: spec.row1, press: press)
+            PillRow(keys: row1, press: press)
             HStack(spacing: 8) {
                 CapsuleKeys(spec: spec.left, width: cap, height: pad, press: press)
                 DPad(size: pad, press: press)
@@ -167,6 +169,7 @@ struct PageView: View {
     let page: PageKind
     let width: CGFloat
     let press: (RemoteKey) -> Void
+    var home: Bool = false
 
     var body: some View {
         VStack(spacing: 14) {
@@ -181,8 +184,8 @@ struct PageView: View {
 
     @ViewBuilder private var remotePage: some View {
         switch layout {
-        case .tv: MainPage(spec: .tv, width: width, press: press)
-        case .audio: MainPage(spec: .audio, width: width, press: press)
+        case .tv: MainPage(spec: .tv, width: width, press: press, home: home)
+        case .audio: MainPage(spec: .audio, width: width, press: press, home: home)
         case .disc: DiscMenuPage(width: width, press: press)
         }
     }
