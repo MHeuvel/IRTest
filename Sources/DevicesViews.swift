@@ -22,7 +22,7 @@ struct DevicesView: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(d.name).foregroundColor(.white)
-                                    Text("\(d.brand) · \(d.typeInfo.name)")
+                                    Text(d.subtitle)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -111,14 +111,27 @@ struct TypeListView: View {
 
     var body: some View {
         List(types) { t in
-            NavigationLink {
-                BrandListView(type: t, onFinished: onFinished)
-            } label: {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(t.name)
-                    Text("\(Catalog.brands(for: t.id).count) brands")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            if t.id == 0 {
+                NavigationLink {
+                    NameDeviceView(type: t, brand: "Custom", onFinished: onFinished)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(t.name)
+                        Text("No code: learn every key yourself")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            } else {
+                NavigationLink {
+                    BrandListView(type: t, onFinished: onFinished)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(t.name)
+                        Text("\(Catalog.brands(for: t.id).count) brands")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
@@ -170,19 +183,29 @@ struct NameDeviceView: View {
     let onFinished: () -> Void
     @State private var name = ""
 
+    private var defaultName: String {
+        type.id == 0 ? "Learned remote" : "\(brand) \(type.name)"
+    }
+
+    private var summary: String {
+        type.id == 0
+            ? "Learned remote · learn every key yourself"
+            : "\(brand) · \(type.name) · \(Catalog.codes(type: type.id, brand: brand).count) codes"
+    }
+
     var body: some View {
         Form {
             Section("Name") {
                 TextField("Name", text: $name)
             }
             Section {
-                Text("\(brand) · \(type.name) · \(Catalog.codes(type: type.id, brand: brand).count) codes")
+                Text(summary)
                     .foregroundColor(.secondary)
             }
             Section {
                 Button("Add") {
                     let trimmed = name.trimmingCharacters(in: .whitespaces)
-                    let finalName = trimmed.isEmpty ? "\(brand) \(type.name)" : trimmed
+                    let finalName = trimmed.isEmpty ? defaultName : trimmed
                     store.add(Device(name: finalName, type: type.id, brand: brand))
                     onFinished()
                 }
@@ -191,7 +214,7 @@ struct NameDeviceView: View {
         .navigationTitle("Name")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            if name.isEmpty { name = "\(brand) \(type.name)" }
+            if name.isEmpty { name = defaultName }
         }
     }
 }
@@ -271,14 +294,7 @@ struct SettingsView: View {
             Section("Connection") {
                 LabeledContent("Status", value: statusText)
                 Button("Reconnect") { remote.reconnect() }
-                Button("Pair / connect UnityRemote") { remote.showPicker() }
-            }
-            Section("Experimental") {
-                NavigationLink {
-                    LearnTestView()
-                } label: {
-                    Text("Learning test")
-                }
+                Button("Pair / connect UnityRemote") { remote.pairOrConnect() }
             }
             Section("Log") {
                 NavigationLink {
@@ -288,7 +304,7 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.5")
+                Text("UnityIRedux 0.6")
                     .foregroundColor(.secondary)
             }
         }
@@ -322,45 +338,5 @@ struct LogView: View {
                 Button("Copy") { UIPasteboard.general.string = remote.log.joined(separator: "\n") }
             }
         }
-    }
-}
-
-// MARK: - Learning test (experimental)
-
-struct LearnTestView: View {
-    @EnvironmentObject var remote: RemoteController
-    @State private var skip = 0
-
-    var body: some View {
-        Form {
-            Section(footer: Text("Experimental. Hold the original remote less than 1 cm from the UnityRemote's learn receiver (next to its flashing LED), tap Start learning, then press one key on the original remote once.")) {
-                Text(remote.learnStatus)
-                Button("Start learning") { remote.startLearning() }
-                    .disabled(remote.status != .connected)
-            }
-            Section("Learned data") {
-                if remote.learnedData.isEmpty {
-                    Text("Nothing learned yet").foregroundColor(.secondary)
-                } else {
-                    Text("\(remote.learnedData.count) bytes").foregroundColor(.secondary)
-                    Text(hex(remote.learnedData))
-                        .font(.system(size: 12, design: .monospaced))
-                        .textSelection(.enabled)
-                    Stepper("Skip first bytes: \(skip)", value: $skip, in: 0...6)
-                    Button("Replay learned data") { remote.replayLearned(skip: skip) }
-                        .disabled(remote.status != .connected)
-                    Button("Copy learned data") { UIPasteboard.general.string = hex(remote.learnedData) }
-                }
-            }
-            Section("Log") {
-                NavigationLink {
-                    LogView()
-                } label: {
-                    Text("View log")
-                }
-            }
-        }
-        .navigationTitle("Learning test")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
