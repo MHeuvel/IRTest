@@ -15,6 +15,11 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     @Published var accessoryName: String = ""
     @Published var accessoryInfo: String = ""
 
+    // Learning test (experimental)
+    @Published var learnStatus: String = "Idle"
+    @Published var learnedData: [UInt8] = []
+    private var learnWaiting = false
+
     private let hardware: HardwareSettings
     private var session: EASession?
     private var pending = [UInt8]()
@@ -37,7 +42,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         refresh(autoOpen: true)
     }
 
-    // MARK: Log en melding
+    // MARK: Log and notice
 
     func addLog(_ text: String) {
         let f = DateFormatter()
@@ -62,10 +67,10 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     private func warn() { UINotificationFeedbackGenerator().notificationOccurred(.warning) }
 
-    // MARK: Accessoires en sessie
+    // MARK: Accessories and session
 
     @objc private func accessoryChanged(_ note: Notification) {
-        let event = note.name == .EAAccessoryDidConnect ? "verbonden" : "losgekoppeld"
+        let event = note.name == .EAAccessoryDidConnect ? "connected" : "disconnected"
         if let acc = note.userInfo?[EAAccessoryKey] as? EAAccessory {
             addLog("Event: \(acc.name) \(event)")
         }
@@ -81,9 +86,9 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     func refresh(autoOpen: Bool) {
         let all = EAAccessoryManager.shared().connectedAccessories
-        addLog("Zoeken: \(all.count) accessoire(s)")
+        addLog("Scan: \(all.count) accessory(ies)")
         for a in all {
-            addLog("- \(a.name) | \(a.manufacturer) | model \(a.modelNumber) | serie \(a.serialNumber) | fw \(a.firmwareRevision) | hw \(a.hardwareRevision) | \(a.protocolStrings.joined(separator: ","))")
+            addLog("- \(a.name) | \(a.manufacturer) | model \(a.modelNumber) | serial \(a.serialNumber) | fw \(a.firmwareRevision) | hw \(a.hardwareRevision) | \(a.protocolStrings.joined(separator: ","))")
         }
         if session != nil { return }
         if let acc = candidate() {
@@ -107,14 +112,14 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     func showPicker() {
         EAAccessoryManager.shared().showBluetoothAccessoryPicker(withNameFilter: nil) { error in
-            self.addLog(error.map { "Kiezer: fout \($0.localizedDescription)" } ?? "Kiezer: klaar")
+            self.addLog(error.map { "Picker: error \($0.localizedDescription)" } ?? "Picker: done")
             self.refresh(autoOpen: true)
         }
     }
 
     private func open(_ accessory: EAAccessory) {
         guard let s = EASession(accessory: accessory, forProtocol: Self.protocolString) else {
-            addLog("EASession kon niet worden geopend")
+            addLog("Could not open EASession")
             return
         }
         session = s
@@ -125,7 +130,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             stream?.open()
         }
         DispatchQueue.main.async { self.status = .connected }
-        addLog("Sessie geopend met \(accessory.name)")
+        addLog("Session opened with \(accessory.name)")
         send(Packet.build(cmd: 0x5D), label: "GetVersion")
     }
 
@@ -140,32 +145,33 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         rxBuffer.removeAll()
         irQueue.removeAll()
         irBusy = false
+        learnWaiting = false
         busyTimer?.cancel()
         busyTimer = nil
         DispatchQueue.main.async {
             self.status = (self.candidate() != nil) ? .accessoryFound : .noAccessory
         }
-        addLog("Sessie gesloten")
+        addLog("Session closed")
     }
 
-    // MARK: Toets versturen (met wachtrij: de chip heeft ongeveer een halve seconde per commando nodig)
+    // MARK: Sending a key (queued: the chip needs about half a second per command)
 
     func send(_ key: RemoteKey, device: Device?) {
         clearNotice()
         guard let device = device, let entry = device.currentCode else {
-            showNotice("Kies eerst een apparaat")
+            showNotice("Choose a device first")
             warn()
             return
         }
         guard status == .connected else {
-            addLog("Niet verbonden: \(key.title) niet verstuurd")
-            showNotice("Niet verbonden")
+            addLog("Not connected: \(key.title) not sent")
+            showNotice("Not connected")
             warn()
             return
         }
         guard let p = Packet.irPassthrough(chip: chip, deviceType: entry.base, irCode: entry.code, keyCode: key.slot) else {
-            addLog("Toets \(key.title) (\(key.slot)) heeft geen toetsnummer op \(chip.title)")
-            showNotice("Functie niet beschikbaar")
+            addLog("Key \(key.title) (\(key.slot)) has no key number on \(chip.title)")
+            showNotice("Function not available")
             warn()
             return
         }
@@ -177,7 +183,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             if irQueue.count < 5 {
                 irQueue.append((bytes: bytes, label: label))
             } else {
-                addLog("Wachtrij vol: \(label) overgeslagen")
+                addLog("Queue full: \(label) skipped")
             }
             return
         }
@@ -203,7 +209,59 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
     }
 
-    // MARK: Ruwe verzending
+    // MARK: Learning test (experimental)
+    //
+    // Begin learning:  AA 55 0A 01 | chip(4) | 03 | 12 | 00 00 | CHK
+    // Replay learned:  AA 55 (L+11) 01 | chip(4) | (L+4) | 10 | 00 00 90 | data(L) | CHK
+
+    func startLearning() {
+        clearNotice()
+        guard status == .connected else {
+            learnStatus = "Not connected"
+            warn()
+            return
+        }
+        learnedData = []
+        learnWaiting = true
+        learnStatus = "Waiting for a key… hold the original remote less than 1 cm from the learn receiver and press one key once."
+        let p = Packet.build(cmd: 0x01, payload: chip.idBytes + [0x03, 0x12, 0x00, 0x00])
+        send(p, label: "LEARN begin · \(chip.title)")
+    }
+
+    func replayLearned(skip: Int) {
+        guard status == .connected else {
+            learnStatus = "Not connected"
+            warn()
+            return
+        }
+        let body = Array(learnedData.dropFirst(min(max(skip, 0), learnedData.count)))
+        guard !body.isEmpty, body.count <= 200 else {
+            learnStatus = "Nothing to replay"
+            warn()
+            return
+        }
+        let payload = chip.idBytes + [UInt8(body.count + 4), 0x10, 0x00, 0x00, 0x90] + body
+        let p = Packet.build(cmd: 0x01, payload: payload)
+        send(p, label: "LEARN replay · \(body.count) bytes (skipped \(skip))")
+    }
+
+    private func handleLearnFrame(_ f: [UInt8]) {
+        // Response frame: AA 55 LEN 20 | 01 | status | data... | CHK
+        guard learnWaiting, f.count >= 7, f[3] == 0x20, f[4] == 0x01 else { return }
+        let st = f[5]
+        let data = Array(f[6..<(f.count - 1)])
+        addLog("LEARN response: status \(String(format: "%02X", st)), \(data.count) data byte(s)")
+        if st == 0x00 && data.count > 2 {
+            learnedData = data
+            learnStatus = "Learned \(data.count) bytes"
+            learnWaiting = false
+        } else if st != 0x00 && st != 0x06 {
+            learnStatus = "Learning failed (status \(String(format: "%02X", st)))"
+            learnWaiting = false
+        }
+    }
+
+    // MARK: Raw sending
 
     func send(_ bytes: [UInt8], label: String) {
         pending += bytes
@@ -217,7 +275,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         if n > 0 {
             pending.removeFirst(n)
         } else if n < 0 {
-            addLog("TX fout: \(out.streamError?.localizedDescription ?? "onbekend")")
+            addLog("TX error: \(out.streamError?.localizedDescription ?? "unknown")")
         }
     }
 
@@ -237,11 +295,12 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
                 for f in Packet.extract(from: &rxBuffer) {
                     let ok = Packet.checksumOK(f)
                     let data = f.count > 5 ? Array(f[4..<(f.count - 1)]) : []
-                    addLog("RX frame: code \(String(format: "%02X", f[3])) data [\(hex(data))] checksum \(ok ? "OK" : "FOUT")")
+                    addLog("RX frame: code \(String(format: "%02X", f[3])) data [\(hex(data))] checksum \(ok ? "OK" : "BAD")")
                     if ok {
                         addLog("  → \(Packet.describe(f))")
                         DispatchQueue.main.async { self.gotReply = true }
-                        // Slotbericht van een IR-commando: 20 | 01 | 00 | ...
+                        handleLearnFrame(f)
+                        // Final response of an IR command: 20 | 01 | 00 | ...
                         if f.count >= 7, f[3] == 0x20, f[4] == 0x01, f[5] == 0x00 { finishIR() }
                     }
                 }
@@ -249,12 +308,12 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         case .hasSpaceAvailable:
             flush()
         case .errorOccurred:
-            addLog("Stream-fout: \(aStream.streamError?.localizedDescription ?? "onbekend")")
+            addLog("Stream error: \(aStream.streamError?.localizedDescription ?? "unknown")")
         case .endEncountered:
-            addLog("Stream beëindigd door het apparaat")
+            addLog("Stream ended by the device")
             closeSession()
         case .openCompleted:
-            addLog("Stream geopend (\(aStream is InputStream ? "input" : "output"))")
+            addLog("Stream opened (\(aStream is InputStream ? "input" : "output"))")
         default:
             break
         }
