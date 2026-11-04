@@ -15,8 +15,8 @@ struct RemoteKey: Hashable {
 // Standaardtoetsen (toetsnummers uit de UnityRemote-database)
 enum K {
     static let power = RemoteKey(slot: 1, title: "Power")
-    static let powerOn = RemoteKey(slot: 2, title: "Aan")
-    static let powerOff = RemoteKey(slot: 3, title: "Uit")
+    static let powerOn = RemoteKey(slot: 2, title: "On")
+    static let powerOff = RemoteKey(slot: 3, title: "Off")
     static let channelUp = RemoteKey(slot: 4, title: "CH+")
     static let channelDown = RemoteKey(slot: 5, title: "CH-")
     static let next = RemoteKey(slot: 4, title: "Next")
@@ -32,33 +32,34 @@ enum K {
     static let last = RemoteKey(slot: 21, title: "Last")
     static let repeatKey = RemoteKey(slot: 21, title: "Repeat")
     static let input = RemoteKey(slot: 22, title: "Input")
+    static let home = RemoteKey(slot: 22, title: "Home")   // only in code sets of base type 11
     static let play = RemoteKey(slot: 24, title: "Play")
     static let stop = RemoteKey(slot: 25, title: "Stop")
     static let pause = RemoteKey(slot: 26, title: "Pause")
     static let reverse = RemoteKey(slot: 27, title: "Reverse")
     static let fastForward = RemoteKey(slot: 28, title: "Forward")
     static let record = RemoteKey(slot: 29, title: "Record")
-    static let sourceMenu = RemoteKey(slot: 33, title: "Bron")
+    static let sourceMenu = RemoteKey(slot: 33, title: "Source")
     static let menu = RemoteKey(slot: 34, title: "Menu")
     static let guide = RemoteKey(slot: 35, title: "Guide")
     static let title = RemoteKey(slot: 35, title: "Title")
     static let exit = RemoteKey(slot: 36, title: "Exit")
     static let back = RemoteKey(slot: 37, title: "Back")
-    static let up = RemoteKey(slot: 38, title: "Omhoog")
-    static let down = RemoteKey(slot: 39, title: "Omlaag")
-    static let left = RemoteKey(slot: 40, title: "Links")
-    static let right = RemoteKey(slot: 41, title: "Rechts")
+    static let up = RemoteKey(slot: 38, title: "Up")
+    static let down = RemoteKey(slot: 39, title: "Down")
+    static let left = RemoteKey(slot: 40, title: "Left")
+    static let right = RemoteKey(slot: 41, title: "Right")
     static let ok = RemoteKey(slot: 42, title: "OK")
     static let info = RemoteKey(slot: 46, title: "Info")
     static let eject = RemoteKey(slot: 51, title: "Eject")
     static let random = RemoteKey(slot: 52, title: "Random")
-    static let red = RemoteKey(slot: 77, title: "Rood")
-    static let green = RemoteKey(slot: 78, title: "Groen")
-    static let yellow = RemoteKey(slot: 79, title: "Geel")
-    static let blue = RemoteKey(slot: 80, title: "Blauw")
+    static let red = RemoteKey(slot: 77, title: "Red")
+    static let green = RemoteKey(slot: 78, title: "Green")
+    static let yellow = RemoteKey(slot: 79, title: "Yellow")
+    static let blue = RemoteKey(slot: 80, title: "Blue")
 }
 
-// Zelfde gedrag voor alle knoppen: direct trilling bij aanraken, verzenden bij loslaten
+// Same behavior for all buttons: haptic on touch-down, send on release
 struct PressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
