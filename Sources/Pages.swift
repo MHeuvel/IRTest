@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum PageKind: String, Identifiable {
-    case remote, numbers, media
+    case remote, numbers, media, custom
     var id: String { rawValue }
 
     var title: String {
@@ -9,6 +9,7 @@ enum PageKind: String, Identifiable {
         case .remote: return "Remote"
         case .numbers: return "Numbers"
         case .media: return "Media"
+        case .custom: return "Custom"
         }
     }
 
@@ -17,6 +18,7 @@ enum PageKind: String, Identifiable {
         case .remote: return "av.remote"
         case .numbers: return "circle.grid.3x3"
         case .media: return "playpause"
+        case .custom: return "square.grid.2x2"
         }
     }
 }
@@ -93,7 +95,7 @@ struct NumbersPage: View {
             }
             HStack(spacing: 10) {
                 switch layout {
-                case .tv:
+                case .tv, .learned:
                     CellKey(key: K.last, icon: "arrow.uturn.backward", press: press)
                 case .disc:
                     CellKey(key: K.eject, icon: "eject.fill", press: press)
@@ -144,7 +146,7 @@ struct MediaPage: View {
             item(K.record, "circle.fill", Color.red)
         ]
         switch layout {
-        case .tv:
+        case .tv, .learned:
             return [transport, tvRow]
         case .disc, .audio:
             return [transport, skipRow, discRow]
@@ -177,6 +179,7 @@ struct PageView: View {
             case .remote: remotePage
             case .numbers: NumbersPage(layout: layout, press: press)
             case .media: MediaPage(layout: layout, press: press)
+            case .custom: EmptyView()
             }
             if showsColors { ColorRow(press: press) }
         }
@@ -187,6 +190,7 @@ struct PageView: View {
         case .tv: MainPage(spec: .tv, width: width, press: press, home: home)
         case .audio: MainPage(spec: .audio, width: width, press: press, home: home)
         case .disc: DiscMenuPage(width: width, press: press)
+        case .learned: EmptyView()
         }
     }
 
