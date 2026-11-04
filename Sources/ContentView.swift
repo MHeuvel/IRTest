@@ -18,6 +18,9 @@ struct ContentView: View {
                 Theme.background.ignoresSafeArea()
                 VStack(spacing: 12) {
                     HeaderCard(sheet: $sheet)
+                    if remote.status == .noAccessory {
+                        PairBanner()
+                    }
                     if let device = store.selected {
                         CodeBar(device: device, sheet: $sheet)
                         RemoteContent(device: device, page: $page, width: geo.size.width - 40)
@@ -82,9 +85,9 @@ struct HeaderCard: View {
 
     private var statusText: String {
         switch remote.status {
-        case .noAccessory: return "Geen UnityRemote gevonden"
-        case .accessoryFound: return "UnityRemote gevonden, niet verbonden"
-        case .connected: return remote.gotReply ? "Verbonden" : "Verbinden…"
+        case .noAccessory: return "No UnityRemote found"
+        case .accessoryFound: return "UnityRemote found, not connected"
+        case .connected: return remote.gotReply ? "Connected" : "Connecting…"
         }
     }
 
@@ -94,52 +97,73 @@ struct HeaderCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 12) {
-                Circle().fill(statusColor).frame(width: 10, height: 10)
-                Menu {
-                    ForEach(store.devices) { d in
-                        Button {
-                            store.selectedID = d.id
-                        } label: {
-                            if d.id == store.selectedID {
-                                Label(d.name, systemImage: "checkmark")
-                            } else {
-                                Text(d.name)
-                            }
+        HStack(spacing: 12) {
+            Circle().fill(statusColor).frame(width: 10, height: 10)
+            Menu {
+                ForEach(store.devices) { d in
+                    Button {
+                        store.selectedID = d.id
+                    } label: {
+                        if d.id == store.selectedID {
+                            Label(d.name, systemImage: "checkmark")
+                        } else {
+                            Text(d.name)
                         }
                     }
-                    Button("Apparaten beheren") { sheet = .devices }
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(store.selected?.name ?? "Geen apparaat")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                        Text(subtitle)
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    }
-                    .contentShape(Rectangle())
                 }
-                Spacer()
-                Button { sheet = .devices } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 21))
+                Button("Manage devices") { sheet = .devices }
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(store.selected?.name ?? "No device")
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.white)
-                        .frame(width: 48, height: 48)
-                        .contentShape(Rectangle())
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
                 }
-                .buttonStyle(PressStyle())
+                .contentShape(Rectangle())
             }
-            LinearGradient(colors: [.red, .orange, .yellow, .green, .blue, .purple],
-                           startPoint: .leading, endPoint: .trailing)
-                .frame(height: 2)
-                .opacity(0.7)
+            Spacer()
+            Button { sheet = .devices } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 21))
+                    .foregroundColor(.white)
+                    .frame(width: 48, height: 48)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(PressStyle())
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(.vertical, 8)
         .background(RoundedRectangle(cornerRadius: 22).fill(Color.black))
+    }
+}
+
+struct PairBanner: View {
+    @EnvironmentObject var remote: RemoteController
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "antenna.radiowaves.left.and.right")
+                .foregroundColor(.orange)
+            Text("No UnityRemote found")
+                .font(.system(size: 14))
+                .foregroundColor(.white)
+            Spacer()
+            Button { remote.showPicker() } label: {
+                Text("Pair / connect")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .frame(height: 34)
+                    .background(Capsule().fill(Color.blue))
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(PressStyle())
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 48)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Theme.surface))
     }
 }
 
@@ -149,7 +173,7 @@ struct CodeBar: View {
     @Binding var sheet: Sheet?
 
     private var text: String {
-        guard let entry = device.currentCode else { return "Geen codes" }
+        guard let entry = device.currentCode else { return "No codes" }
         let index = min(max(device.codeIndex, 0), device.codes.count - 1) + 1
         return "Code \(entry.code)  ·  \(index)/\(device.codes.count)"
     }
@@ -194,15 +218,15 @@ struct EmptyState: View {
             Image(systemName: "tv")
                 .font(.system(size: 44))
                 .foregroundColor(.gray)
-            Text("Nog geen apparaat")
+            Text("No device yet")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.white)
-            Text("Tik op het tandwiel en kies \"Apparaat toevoegen\".")
+            Text("Tap the gear and choose \"Add device\".")
                 .font(.system(size: 15))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             Button { sheet = .devices } label: {
-                Text("Apparaten openen")
+                Text("Open devices")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 22)
@@ -226,28 +250,58 @@ struct RemoteContent: View {
     private var layout: LayoutKind { device.typeInfo.layout }
     private var pages: [PageKind] { layout.pages }
     private var active: PageKind { pages.contains(page) ? page : pages[0] }
+    private var homeKey: Bool { device.currentCode?.base == 11 }
 
     private func press(_ key: RemoteKey) {
         remote.send(key, device: device)
     }
 
+    private func select(_ p: PageKind) {
+        withAnimation(.easeInOut(duration: 0.2)) { page = p }
+    }
+
+    private func move(_ delta: Int) {
+        guard let i = pages.firstIndex(of: active) else { return }
+        let n = i + delta
+        guard pages.indices.contains(n) else { return }
+        select(pages[n])
+    }
+
+    // Swipe left/right (on top of the page bar); mostly horizontal and at least 60 pt
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { v in
+                let dx = v.translation.width
+                let dy = v.translation.height
+                guard abs(dx) > 60, abs(dx) > abs(dy) * 1.5 else { return }
+                move(dx < 0 ? 1 : -1)
+            }
+    }
+
     private var pageBody: some View {
-        PageView(layout: layout, page: active, width: width, press: press)
+        PageView(layout: layout, page: active, width: width, press: press, home: homeKey)
     }
 
     var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
-                PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
-                PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+            VStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
+                    PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
+                    PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+                }
+                ViewThatFits(in: .vertical) {
+                    pageBody
+                    ScrollView { pageBody }
+                }
+                .id(active)
+                .transition(.opacity)
+                Spacer(minLength: 0)
             }
-            ViewThatFits(in: .vertical) {
-                pageBody
-                ScrollView { pageBody }
-            }
-            Spacer(minLength: 0)
-            PageBar(pages: pages, active: active, select: { page = $0 })
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .contentShape(Rectangle())
+            .simultaneousGesture(swipe)
+            PageBar(pages: pages, active: active, select: select)
         }
     }
 }
