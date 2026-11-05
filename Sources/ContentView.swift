@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var editingKey: LearnedKey?
     @State private var renamingKey: LearnedKey?
     @State private var newKeyName = ""
+    @State private var showReorder = false
 
     private func toggleLearn() {
         learnMode.toggle()
@@ -42,7 +43,8 @@ struct ContentView: View {
                                       width: geo.size.width - 40,
                                       learnMode: learnMode,
                                       onAddKey: { learnTarget = LearnTarget(deviceID: device.id, existing: nil) },
-                                      onEditKey: { editingKey = $0 })
+                                      onEditKey: { editingKey = $0 },
+                                      onReorder: { showReorder = true })
                     } else {
                         EmptyState(sheet: $sheet)
                     }
@@ -67,6 +69,11 @@ struct ContentView: View {
                 if let d = store.selected {
                     CodePickerView(device: d).environmentObject(store)
                 }
+            }
+        }
+        .sheet(isPresented: $showReorder) {
+            if let d = store.selected {
+                ReorderKeysView(deviceID: d.id).environmentObject(store)
             }
         }
         .sheet(item: $learnTarget) { t in
@@ -218,9 +225,15 @@ struct PairBanner: View {
         HStack(spacing: 10) {
             Image(systemName: "antenna.radiowaves.left.and.right")
                 .foregroundColor(.orange)
-            Text("No UnityRemote found")
-                .font(.system(size: 14))
-                .foregroundColor(.white)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No UnityRemote found")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                Text("Last used with another phone? Tap Pair / connect.")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
             Spacer()
             Button { remote.pairOrConnect() } label: {
                 Text("Pair / connect")
@@ -234,7 +247,7 @@ struct PairBanner: View {
             .buttonStyle(PressStyle())
         }
         .padding(.horizontal, 14)
-        .frame(height: 48)
+        .padding(.vertical, 8)
         .background(RoundedRectangle(cornerRadius: 14).fill(Theme.surface))
     }
 }
@@ -321,6 +334,7 @@ struct RemoteContent: View {
     let learnMode: Bool
     let onAddKey: () -> Void
     let onEditKey: (LearnedKey) -> Void
+    let onReorder: () -> Void
 
     private var layout: LayoutKind { device.typeInfo.layout }
     private var pages: [PageKind] { layout.pages }
@@ -358,7 +372,8 @@ struct RemoteContent: View {
                    learnMode: learnMode,
                    send: { key in remote.sendLearned(key.signal, label: "\(key.name) · \(device.name)") },
                    onAdd: onAddKey,
-                   onEdit: onEditKey)
+                   onEdit: onEditKey,
+                   onReorder: onReorder)
     }
 
     private var standardPage: some View {

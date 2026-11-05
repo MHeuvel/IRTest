@@ -19,6 +19,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     @Published var learnStatus: String = "Idle"
     @Published var learnedData: [UInt8] = []
     @Published var isLearning = false
+    @Published var learnFailed = false
 
     private let hardware: HardwareSettings
     private var session: EASession?
@@ -121,19 +122,33 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
     }
 
-    func reconnect() {
+    @discardableResult
+    func reconnect() -> String {
         closeSession()
         refresh(autoOpen: true)
+        let message = "Reconnecting…"
+        showNotice(message)
+        return message
     }
 
-    // "Pair / connect": use a unit iOS already knows; only show the system picker when none is found
-    func pairOrConnect() {
+    // "Pair / connect": use a unit iOS already knows; only show the system picker when none is found.
+    // Returns a short message for the caller to display.
+    @discardableResult
+    func pairOrConnect() -> String {
+        if status == .connected {
+            let message = "Already connected"
+            showNotice(message)
+            return message
+        }
         if candidate() != nil {
             addLog("Unit already known to iOS: connecting")
             if session == nil { refresh(autoOpen: true) }
-            return
+            let message = "Connecting…"
+            showNotice(message)
+            return message
         }
         showPicker()
+        return "Choose your unit in the iOS list"
     }
 
     func showPicker() {
@@ -267,6 +282,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     func resetLearn() {
         learnTimer?.cancel()
         isLearning = false
+        learnFailed = false
         learnedData = []
         learnStatus = "Idle"
     }
@@ -280,6 +296,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
         learnedData = []
         isLearning = true
+        learnFailed = false
         learnStatus = "Waiting for a key…"
         let p = Packet.build(cmd: 0x01, payload: chip.idBytes + [0x03, 0x12, 0x00, 0x00])
         send(p, label: "LEARN begin · \(chip.title)")
@@ -287,7 +304,8 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         let work = DispatchWorkItem { [weak self] in
             guard let self = self, self.isLearning else { return }
             self.isLearning = false
-            self.learnStatus = "No response. Try again."
+            self.learnFailed = true
+            self.learnStatus = "No response from the unit. Try again."
             self.addLog("LEARN: no response after 60 s")
         }
         learnTimer = work
@@ -313,7 +331,10 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             isLearning = false
         } else if st != 0x00 && st != 0x06 {
             learnTimer?.cancel()
-            learnStatus = "Learning failed or timed out (status \(String(format: "%02X", st)))"
+            learnFailed = true
+            learnStatus = st == 0x08
+                ? "Learning timed out: no signal received."
+                : "Learning failed (status \(String(format: "%02X", st)))."
             isLearning = false
         }
     }

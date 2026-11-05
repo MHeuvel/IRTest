@@ -32,6 +32,7 @@ struct CustomPage: View {
     let send: (LearnedKey) -> Void
     let onAdd: () -> Void
     let onEdit: (LearnedKey) -> Void
+    let onReorder: () -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 10),
@@ -46,6 +47,18 @@ struct CustomPage: View {
                     .font(.system(size: 13))
                     .foregroundColor(.blue)
                     .multilineTextAlignment(.center)
+                if device.learnedKeys.count >= 2 {
+                    Button { onReorder() } label: {
+                        Label("Reorder", systemImage: "arrow.up.arrow.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 14)
+                            .frame(height: 34)
+                            .background(Capsule().fill(Theme.surface))
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(PressStyle())
+                }
             } else if device.learnedKeys.isEmpty {
                 Text("No learned keys yet.\nTap the learn button at the top, then +.")
                     .font(.system(size: 14))
@@ -141,11 +154,16 @@ struct LearnKeyView: View {
                     } else {
                         Text(remote.learnStatus)
                     }
-                    Button(data.isEmpty ? "Start learning" : "Relearn") {
+                    Button(data.isEmpty ? (remote.learnFailed ? "Try again" : "Start learning") : "Relearn") {
                         skipTouched = false
                         remote.startLearning()
                     }
                     .disabled(remote.status != .connected || remote.isLearning)
+                    if remote.learnFailed {
+                        Text("Hold the remote closer, and press the key right after the unit's LED starts flashing. Some modern remotes (for example the LG Magic Remote) send most keys over Bluetooth or radio instead of IR; film the remote's LED with your front camera to check that it flashes.")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
                     if existing != nil && data.isEmpty {
                         Text("A signal is already saved for this key (\(existing?.signal.count ?? 0) bytes). Learn again to replace it.")
                             .font(.footnote)
@@ -213,6 +231,40 @@ struct LearnKeyView: View {
                 if !skipTouched { skip = LearnParse.guessSkip(newData) ?? 2 }
             }
             .onDisappear { remote.cancelLearning() }
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
+// MARK: - Reorder learned keys
+
+struct ReorderKeysView: View {
+    @EnvironmentObject var store: DeviceStore
+    @Environment(\.dismiss) private var dismiss
+    let deviceID: UUID
+
+    private var keys: [LearnedKey] {
+        store.devices.first(where: { $0.id == deviceID })?.learnedKeys ?? []
+    }
+
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(keys) { key in
+                    Text(key.name)
+                }
+                .onMove { source, destination in
+                    store.moveKeys(device: deviceID, from: source, to: destination)
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle("Reorder keys")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
         .preferredColorScheme(.dark)
     }

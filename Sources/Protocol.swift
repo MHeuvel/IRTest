@@ -104,6 +104,8 @@ extension Packet {
                 text = "status 06 (intermediate step, occurs on every IR key)"
             } else if data[0] == 0x01 && st == 7 {
                 text = "status 07 (chip busy, key possibly not sent)"
+            } else if data[0] == 0x01 && st == 8 {
+                text = "status 08 (learning timed out: no usable signal received)"
             } else {
                 text = "status \(String(format: "%02X", st)) = \(names[st] ?? "unknown")"
             }

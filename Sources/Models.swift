@@ -138,6 +138,37 @@ final class DeviceStore: ObservableObject {
         guard let i = devices.firstIndex(where: { $0.id == deviceID }) else { return }
         devices[i].learnedKeys.removeAll { $0.id == keyID }
     }
+
+    func moveKeys(device deviceID: UUID, from source: IndexSet, to destination: Int) {
+        guard let i = devices.firstIndex(where: { $0.id == deviceID }) else { return }
+        devices[i].learnedKeys.move(fromOffsets: source, toOffset: destination)
+    }
+
+    // MARK: Backup (devices and learned keys as JSON text)
+
+    private struct BackupFile: Codable {
+        var version: Int
+        var devices: [Device]
+    }
+
+    func backupText() -> String {
+        let file = BackupFile(version: 1, devices: devices)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let data = try? encoder.encode(file),
+              let text = String(data: data, encoding: .utf8) else { return "" }
+        return text
+    }
+
+    // Replaces all devices; returns false when the text is not a valid backup
+    func restore(from text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let data = trimmed.data(using: .utf8),
+              let file = try? JSONDecoder().decode(BackupFile.self, from: data) else { return false }
+        devices = file.devices
+        selectedID = file.devices.first?.id
+        return true
+    }
 }
 
 // Chip type per UnityRemote unit (by serial number or name)
