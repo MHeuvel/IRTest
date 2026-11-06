@@ -1,7 +1,9 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct DevicesView: View {
     @EnvironmentObject var store: DeviceStore
+    @EnvironmentObject var remote: RemoteController
     @Environment(\.dismiss) private var dismiss
     @State private var showAdd = false
     @State private var renameTarget: Device?
@@ -84,6 +86,8 @@ struct DevicesView: View {
                 Button("Cancel", role: .cancel) { renameTarget = nil }
             }
         }
+        .overlay { NoticeView() }
+        .animation(.easeInOut(duration: 0.15), value: remote.notice)
         .preferredColorScheme(.dark)
     }
 }
@@ -128,9 +132,9 @@ struct TypeListView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(t.name)
-                        Text("\(Catalog.brands(for: t.id).count) brands" + (t.isBeta ? " · beta" : ""))
+                        Text("\(Catalog.brands(for: t.id).count) brands")
                             .font(.caption)
-                            .foregroundColor(t.isBeta ? .orange : .secondary)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
@@ -198,9 +202,7 @@ struct NameDeviceView: View {
             Section("Name") {
                 TextField("Name", text: $name)
             }
-            Section(footer: type.isBeta
-                    ? Text("Beta: the keys for this type are composed from the old app's key names and have not been tested on a real device yet.")
-                    : Text("")) {
+            Section {
                 Text(summary)
                     .foregroundColor(.secondary)
             }
@@ -266,8 +268,9 @@ struct SettingsView: View {
     @EnvironmentObject var store: DeviceStore
     @EnvironmentObject var remote: RemoteController
     @EnvironmentObject var hardware: HardwareSettings
-    @State private var feedback: String?
-    @State private var showRestore = false
+    @State private var exporting = false
+    @State private var importing = false
+    @State private var confirmRestore = false
 
     private var chipBinding: Binding<Chip> {
         Binding(get: { hardware.chip(for: remote.accessoryKey) },
@@ -282,10 +285,20 @@ struct SettingsView: View {
         }
     }
 
-    private func show(_ message: String) {
-        feedback = message
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            if feedback == message { feedback = nil }
+    private func finishImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            let access = url.startAccessingSecurityScopedResource()
+            defer { if access { url.stopAccessingSecurityScopedResource() } }
+            if let data = try? Data(contentsOf: url),
+               let text = String(data: data, encoding: .utf8),
+               store.restore(from: text) {
+                remote.showNotice("Backup restored")
+            } else {
+                remote.showNotice("Not a valid backup file")
+            }
+        case .failure:
+            remote.showNotice("Could not open the file")
         }
     }
 
@@ -306,23 +319,26 @@ struct SettingsView: View {
             Section(header: Text("Connection"),
                     footer: Text("iOS shows its own list when you tap Pair / connect. It stays empty for a unit that is already paired with this phone. If the unit was last used with another phone, connect it once in iOS Settings > Bluetooth.")) {
                 LabeledContent("Status", value: statusText)
-                Button("Reconnect") { show(remote.reconnect()) }
-                Button("Pair / connect UnityRemote") { show(remote.pairOrConnect()) }
+                Button("Reconnect") { remote.reconnect() }
+                Button("Pair / connect UnityRemote") { remote.pairOrConnect() }
                     .disabled(remote.status == .connected)
-                if let feedback = feedback {
-                    Text(feedback).foregroundColor(.secondary)
-                }
             }
             Section(header: Text("Backup"),
-                    footer: Text("A backup contains your devices and learned keys. Keep it somewhere safe, for example in Notes: reinstalling the app removes them.")) {
-                ShareLink(item: store.backupText()) {
-                    Text("Share backup…")
-                }
-                Button("Copy backup") {
-                    UIPasteboard.general.string = store.backupText()
-                    show("Backup copied")
-                }
-                Button("Restore from clipboard") { showRestore = true }
+                    footer: Text("A backup file contains your devices and learned keys. Keep it somewhere safe: reinstalling the app removes them.")) {
+                Button("Save as file") { exporting = true }
+                    .fileExporter(isPresented: $exporting,
+                                  document: BackupDocument(text: store.backupText()),
+                                  contentType: .json,
+                                  defaultFilename: "UnityIRedux-backup") { result in
+                        switch result {
+                        case .success: remote.showNotice("Backup saved")
+                        case .failure: remote.showNotice("Backup failed")
+                        }
+                    }
+                Button("Restore from file") { confirmRestore = true }
+                    .fileImporter(isPresented: $importing,
+                                  allowedContentTypes: [.json, .plainText],
+                                  onCompletion: finishImport)
             }
             Section("Log") {
                 NavigationLink {
@@ -332,20 +348,17 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.7")
+                Text("UnityIRedux 0.8")
                     .foregroundColor(.secondary)
             }
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Restore backup?", isPresented: $showRestore) {
-            Button("Restore", role: .destructive) {
-                let ok = store.restore(from: UIPasteboard.general.string ?? "")
-                show(ok ? "Backup restored" : "The clipboard does not contain a valid backup")
-            }
+        .alert("Restore from file?", isPresented: $confirmRestore) {
+            Button("Choose file", role: .destructive) { importing = true }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This replaces all devices and learned keys in the app with the backup on the clipboard.")
+            Text("Restoring replaces all devices and learned keys in the app with the contents of the file.")
         }
     }
 }

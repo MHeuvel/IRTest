@@ -377,7 +377,9 @@ struct RemoteContent: View {
     }
 
     private var standardPage: some View {
-        PageView(layout: layout, page: active, width: width, press: press, home: homeKey)
+        PageView(layout: layout, page: active, width: width, press: press, home: homeKey,
+                 holdStart: { remote.startContinuous($0, device: device) },
+                 holdEnd: { remote.stopContinuous() })
     }
 
     var body: some View {

@@ -49,6 +49,8 @@ struct MainPage: View {
     let width: CGFloat
     let press: (RemoteKey) -> Void
     var home: Bool = false
+    var holdStart: (RemoteKey) -> Void = { _ in }
+    var holdEnd: () -> Void = {}
 
     var body: some View {
         let cap = min(76, width * 0.2)
@@ -57,9 +59,9 @@ struct MainPage: View {
         VStack(spacing: 14) {
             PillRow(keys: row1, press: press)
             HStack(spacing: 8) {
-                CapsuleKeys(spec: spec.left, width: cap, height: pad, press: press)
+                CapsuleKeys(spec: spec.left, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
                 DPad(size: pad, press: press)
-                CapsuleKeys(spec: spec.right, width: cap, height: pad, press: press)
+                CapsuleKeys(spec: spec.right, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
             }
             PillRow(keys: spec.row3, press: press)
         }
@@ -172,6 +174,8 @@ struct PageView: View {
     let width: CGFloat
     let press: (RemoteKey) -> Void
     var home: Bool = false
+    var holdStart: (RemoteKey) -> Void = { _ in }
+    var holdEnd: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 14) {
@@ -187,8 +191,8 @@ struct PageView: View {
 
     @ViewBuilder private var remotePage: some View {
         switch layout {
-        case .tv: MainPage(spec: .tv, width: width, press: press, home: home)
-        case .audio: MainPage(spec: .audio, width: width, press: press, home: home)
+        case .tv: MainPage(spec: .tv, width: width, press: press, home: home, holdStart: holdStart, holdEnd: holdEnd)
+        case .audio: MainPage(spec: .audio, width: width, press: press, home: home, holdStart: holdStart, holdEnd: holdEnd)
         case .disc: DiscMenuPage(width: width, press: press)
         case .learned: EmptyView()
         }

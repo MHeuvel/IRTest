@@ -32,6 +32,8 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     private var learnTimer: DispatchWorkItem?
     private var monitorTimer: Timer?
     private var openFailures = 0
+    private var holdActive = false
+    private var holdTimeout: DispatchWorkItem?
 
     var chip: Chip { hardware.chip(for: accessoryKey) }
 
@@ -189,6 +191,8 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         irQueue.removeAll()
         irBusy = false
         isLearning = false
+        holdActive = false
+        holdTimeout?.cancel()
         learnTimer?.cancel()
         busyTimer?.cancel()
         busyTimer = nil
@@ -220,6 +224,47 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             return
         }
         enqueueIR(p, label: "\(key.title) · \(device.brand) \(entry.code) · type \(entry.base) · \(chip.title)")
+    }
+
+    // Press and hold: continuous sending until released.
+    // Start: same packet as a single key with CMD 02; stop: AA 55 02 04 CHK (no chip ID).
+    func startContinuous(_ key: RemoteKey, device: Device?) {
+        clearNotice()
+        guard let device = device, let entry = device.currentCode else { return }
+        guard status == .connected else {
+            showNotice("Not connected")
+            warn()
+            return
+        }
+        guard !holdActive else { return }
+        guard let p = Packet.irPassthrough(chip: chip, deviceType: entry.base, irCode: entry.code,
+                                           keyCode: key.slot, cmd: 0x02) else {
+            showNotice("Function not available")
+            warn()
+            return
+        }
+        irQueue.removeAll()
+        holdActive = true
+        send(p, label: "HOLD start \(key.title) · \(device.brand) \(entry.code)")
+        holdTimeout?.cancel()
+        // Safety: never send continuously for more than 10 seconds
+        let work = DispatchWorkItem { [weak self] in self?.stopContinuous() }
+        holdTimeout = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: work)
+    }
+
+    func stopContinuous() {
+        guard holdActive else { return }
+        holdActive = false
+        holdTimeout?.cancel()
+        holdTimeout = nil
+        send(Packet.build(cmd: 0x04), label: "HOLD stop")
+        // Give the chip a moment before the next command
+        irBusy = true
+        busyTimer?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.finishIR() }
+        busyTimer = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
     }
 
     // Replay of a learned signal (00 00 LL + body):

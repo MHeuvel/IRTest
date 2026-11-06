@@ -138,6 +138,64 @@ struct CellKey: View {
     }
 }
 
+// One half of a capsule (for example VOL +). A short press sends the key once;
+// holding it (0.4 s) starts continuous sending until the finger is lifted.
+struct HoldHalf: View {
+    let key: RemoteKey
+    let icon: String
+    let tap: (RemoteKey) -> Void
+    let holdStart: (RemoteKey) -> Void
+    let holdEnd: () -> Void
+
+    @State private var pressed = false
+    @State private var holding = false
+    @State private var holdTask: DispatchWorkItem?
+
+    var body: some View {
+        Image(systemName: icon)
+            .font(.system(size: 26, weight: .semibold))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .opacity(pressed ? 0.6 : 1.0)
+            .scaleEffect(pressed ? 0.93 : 1.0)
+            .animation(.easeOut(duration: 0.08), value: pressed)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if !pressed {
+                            pressed = true
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            let work = DispatchWorkItem {
+                                holding = true
+                                holdStart(key)
+                            }
+                            holdTask = work
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: work)
+                        }
+                        // Moving far away turns it into a swipe: cancel a hold that has not started
+                        let moved = max(abs(value.translation.width), abs(value.translation.height))
+                        if moved > 25 && !holding {
+                            holdTask?.cancel()
+                            holdTask = nil
+                        }
+                    }
+                    .onEnded { value in
+                        let moved = max(abs(value.translation.width), abs(value.translation.height))
+                        holdTask?.cancel()
+                        holdTask = nil
+                        if holding {
+                            holdEnd()
+                        } else if moved <= 25 {
+                            tap(key)
+                        }
+                        pressed = false
+                        holding = false
+                    }
+            )
+    }
+}
+
 struct CapsuleSpec {
     let label: String
     let up: RemoteKey
@@ -146,35 +204,26 @@ struct CapsuleSpec {
     let downIcon: String
 }
 
-// Verticale balk met twee grote helften (bijvoorbeeld VOL + en -)
+// Vertical bar with two large halves (for example VOL + and -)
 struct CapsuleKeys: View {
     let spec: CapsuleSpec
     let width: CGFloat
     let height: CGFloat
     let press: (RemoteKey) -> Void
+    var holdStart: (RemoteKey) -> Void = { _ in }
+    var holdEnd: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
-            half(spec.up, spec.upIcon)
+            HoldHalf(key: spec.up, icon: spec.upIcon, tap: press, holdStart: holdStart, holdEnd: holdEnd)
             Text(spec.label)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.white.opacity(0.55))
-            half(spec.down, spec.downIcon)
+            HoldHalf(key: spec.down, icon: spec.downIcon, tap: press, holdStart: holdStart, holdEnd: holdEnd)
         }
         .frame(width: width, height: height)
         .background(Capsule().fill(Theme.surface))
         .overlay(Capsule().stroke(Theme.stroke, lineWidth: 1))
-    }
-
-    private func half(_ key: RemoteKey, _ icon: String) -> some View {
-        Button { press(key) } label: {
-            Image(systemName: icon)
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(PressStyle())
     }
 }
 

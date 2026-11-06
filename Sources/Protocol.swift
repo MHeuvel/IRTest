@@ -50,13 +50,13 @@ enum Packet {
         return b
     }
 
-    static func irPassthrough(chip: Chip, deviceType: Int, irCode: Int, keyCode: Int) -> [UInt8]? {
+    static func irPassthrough(chip: Chip, deviceType: Int, irCode: Int, keyCode: Int, cmd: UInt8 = 0x01) -> [UInt8]? {
         guard (1...11).contains(deviceType), (0...0x0FFF).contains(irCode) else { return nil }
         let key = chip.keyNumber(keyCode)
         guard key != 0 else { return nil }
         let v = UInt16(((deviceType - 1) << 12) | irCode)
         let payload: [UInt8] = chip.idBytes + [0x05, 0x01, UInt8(v >> 8), UInt8(v & 0xFF), UInt8(key), 0x80]
-        return build(cmd: 0x01, payload: payload)
+        return build(cmd: cmd, payload: payload)
     }
 
     static func extract(from buffer: inout [UInt8]) -> [[UInt8]] {

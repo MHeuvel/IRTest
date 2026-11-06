@@ -22,9 +22,6 @@ struct DeviceType: Identifiable, Hashable {
     let id: Int        // device type from UnityRemote (1...39)
     let name: String
     let layout: LayoutKind
-
-    // Types that have been tested on a real device: learned remote and TV-like types
-    var isBeta: Bool { ![0, 12, 36, 37, 38].contains(id) }
 }
 
 enum Catalog {
