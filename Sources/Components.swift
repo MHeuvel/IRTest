@@ -168,6 +168,7 @@ struct HoldHalf: View {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             let work = DispatchWorkItem {
                                 holding = true
+                                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
                                 holdStart(key)
                             }
                             holdTask = work

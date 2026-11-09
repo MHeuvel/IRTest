@@ -48,6 +48,7 @@ struct CustomPage: View {
     let onAdd: () -> Void
     let onEdit: (LearnedKey) -> Void
     let onReorder: () -> Void
+    let onImport: () -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 10),
@@ -62,9 +63,21 @@ struct CustomPage: View {
                     .font(.system(size: 13))
                     .foregroundColor(.blue)
                     .multilineTextAlignment(.center)
-                if device.learnedKeys.count >= 2 {
-                    Button { onReorder() } label: {
-                        Label("Reorder", systemImage: "arrow.up.arrow.down")
+                HStack(spacing: 10) {
+                    if device.learnedKeys.count >= 2 {
+                        Button { onReorder() } label: {
+                            Label("Reorder", systemImage: "arrow.up.arrow.down")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 14)
+                                .frame(height: 34)
+                                .background(Capsule().fill(Theme.surface))
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(PressStyle())
+                    }
+                    Button { onImport() } label: {
+                        Label("Import Flipper file", systemImage: "square.and.arrow.down")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 14)
@@ -152,6 +165,7 @@ struct LearnKeyView: View {
         mode == .learn ? remote.learnedData : LearnParse.parseHex(rawText)
     }
     private var guess: Int? { LearnParse.guessSkip(data) }
+    private var analysis: IRAnalysis { IRAnalyzer.analyze(signal) }
     private var signal: [UInt8] { Array(data.dropFirst(min(max(skip, 0), data.count))) }
     private var canSave: Bool {
         !data.isEmpty
@@ -227,6 +241,23 @@ struct LearnKeyView: View {
                             .textSelection(.enabled)
                     }
 
+                }
+
+                if !data.isEmpty && signal.count >= 7 {
+                    Section("Recording") {
+                        Label(analysis.text, systemImage: analysis.good ? "checkmark.circle" : "exclamationmark.triangle")
+                            .foregroundColor(analysis.good ? nil : .orange)
+                        ForEach(analysis.notes, id: \.self) { note in
+                            Text(note)
+                                .font(.footnote)
+                                .foregroundColor(.orange)
+                        }
+                        if !analysis.good {
+                            Text("This recording may not be correct. Use Replay to test it before you save it.")
+                                .font(.footnote)
+                                .foregroundColor(.orange)
+                        }
+                    }
                 }
 
                 if !data.isEmpty {

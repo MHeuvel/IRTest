@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var renamingKey: LearnedKey?
     @State private var newKeyName = ""
     @State private var showReorder = false
+    @State private var showFlipperImport = false
 
     private func toggleLearn() {
         learnMode.toggle()
@@ -44,7 +45,8 @@ struct ContentView: View {
                                       learnMode: learnMode,
                                       onAddKey: { learnTarget = LearnTarget(deviceID: device.id, existing: nil) },
                                       onEditKey: { editingKey = $0 },
-                                      onReorder: { showReorder = true })
+                                      onReorder: { showReorder = true },
+                                      onImport: { showFlipperImport = true })
                     } else {
                         EmptyState(sheet: $sheet)
                     }
@@ -69,6 +71,13 @@ struct ContentView: View {
                 if let d = store.selected {
                     CodePickerView(device: d).environmentObject(store)
                 }
+            }
+        }
+        .sheet(isPresented: $showFlipperImport) {
+            if let d = store.selected {
+                FlipperImportView(deviceID: d.id)
+                    .environmentObject(store)
+                    .environmentObject(remote)
             }
         }
         .sheet(isPresented: $showReorder) {
@@ -335,6 +344,7 @@ struct RemoteContent: View {
     let onAddKey: () -> Void
     let onEditKey: (LearnedKey) -> Void
     let onReorder: () -> Void
+    let onImport: () -> Void
 
     private var layout: LayoutKind { device.typeInfo.layout }
     private var pages: [PageKind] { layout.pages }
@@ -373,7 +383,8 @@ struct RemoteContent: View {
                    send: { key in remote.sendLearned(key.signal, label: "\(key.name) · \(device.name)") },
                    onAdd: onAddKey,
                    onEdit: onEditKey,
-                   onReorder: onReorder)
+                   onReorder: onReorder,
+                   onImport: onImport)
     }
 
     private var standardPage: some View {

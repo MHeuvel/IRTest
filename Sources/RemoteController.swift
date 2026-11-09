@@ -34,6 +34,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     private var openFailures = 0
     private var holdActive = false
     private var holdTimeout: DispatchWorkItem?
+    private var holdStartedAt = Date.distantPast
 
     var chip: Chip { hardware.chip(for: accessoryKey) }
 
@@ -226,12 +227,15 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         enqueueIR(p, label: "\(key.title) · \(device.brand) \(entry.code) · type \(entry.base) · \(chip.title)")
     }
 
-    // Press and hold: continuous sending until released.
-    // Start: same packet as a single key with CMD 02; stop: AA 55 02 04 CHK (no chip ID).
+    // Press and hold, as the original app does it:
+    //   start = the key packet with CMD 02 and trailer 00 (a single key uses CMD 01 and trailer 80)
+    //   stop  = AA 55 02 04 CHK (no chip ID)
+    // The chip needs about 0.5 s per command, so a stop is never sent sooner than that after the start.
     func startContinuous(_ key: RemoteKey, device: Device?) {
         clearNotice()
         guard let device = device, let entry = device.currentCode else { return }
         guard status == .connected else {
+            addLog("HOLD ignored: not connected")
             showNotice("Not connected")
             warn()
             return
@@ -245,6 +249,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
         irQueue.removeAll()
         holdActive = true
+        holdStartedAt = Date()
         send(p, label: "HOLD start \(key.title) · \(device.brand) \(entry.code)")
         holdTimeout?.cancel()
         // Safety: never send continuously for more than 10 seconds
@@ -258,13 +263,19 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         holdActive = false
         holdTimeout?.cancel()
         holdTimeout = nil
-        send(Packet.build(cmd: 0x04), label: "HOLD stop")
-        // Give the chip a moment before the next command
+        let wait = max(0, 0.5 - Date().timeIntervalSince(holdStartedAt))
+        let work = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            self.send(Packet.build(cmd: 0x04), label: "HOLD stop")
+            // Give the chip a moment before the next command
+            self.irBusy = true
+            self.busyTimer?.cancel()
+            let done = DispatchWorkItem { [weak self] in self?.finishIR() }
+            self.busyTimer = done
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: done)
+        }
         irBusy = true
-        busyTimer?.cancel()
-        let work = DispatchWorkItem { [weak self] in self?.finishIR() }
-        busyTimer = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + wait, execute: work)
     }
 
     // Replay of a learned signal (00 00 LL + body):

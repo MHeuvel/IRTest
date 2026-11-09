@@ -7,8 +7,9 @@ import Foundation
 //   CHK = bitwise NOT of the XOR of all preceding bytes (measured on the device)
 //
 // IR-passthrough (CMD 0x01), payload (10 bytes):
-//   chipID[4] | 05 | 01 | V_hi | V_lo | keyNumber | 80
+//   chipID[4] | 05 | 01 | V_hi | V_lo | keyNumber | trailer
 //   V = ((deviceType - 1) << 12) | irCode
+//   trailer = 80 for a single key (CMD 01), 00 for continuous (CMD 02), as the original app builds them.
 
 enum Chip: String, CaseIterable, Identifiable {
     case axumII, gondarII, gondarI
@@ -55,7 +56,8 @@ enum Packet {
         let key = chip.keyNumber(keyCode)
         guard key != 0 else { return nil }
         let v = UInt16(((deviceType - 1) << 12) | irCode)
-        let payload: [UInt8] = chip.idBytes + [0x05, 0x01, UInt8(v >> 8), UInt8(v & 0xFF), UInt8(key), 0x80]
+        let trailer: UInt8 = cmd == 0x01 ? 0x80 : 0x00
+        let payload: [UInt8] = chip.idBytes + [0x05, 0x01, UInt8(v >> 8), UInt8(v & 0xFF), UInt8(key), trailer]
         return build(cmd: cmd, payload: payload)
     }
 
