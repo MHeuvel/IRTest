@@ -17,6 +17,7 @@ struct Device: Identifiable, Codable, Hashable {
     var brand: String
     var codeIndex: Int = 0
     var learnedKeys: [LearnedKey] = []
+    var powerHoldMs: Int = 0      // 0 = Power is sent once; otherwise the Power key is transmitted for this long (CMD 03)
 
     init(name: String, type: Int, brand: String) {
         self.name = name
@@ -33,6 +34,7 @@ struct Device: Identifiable, Codable, Hashable {
         brand = try c.decode(String.self, forKey: .brand)
         codeIndex = try c.decodeIfPresent(Int.self, forKey: .codeIndex) ?? 0
         learnedKeys = try c.decodeIfPresent([LearnedKey].self, forKey: .learnedKeys) ?? []
+        powerHoldMs = try c.decodeIfPresent(Int.self, forKey: .powerHoldMs) ?? 0
     }
 
     var codes: [CodeEntry] { Catalog.codes(type: type, brand: brand) }
@@ -95,6 +97,11 @@ final class DeviceStore: ObservableObject {
         guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         if !trimmed.isEmpty { devices[i].name = trimmed }
+    }
+
+    func setPowerHold(_ id: UUID, ms: Int) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        devices[i].powerHoldMs = min(max(ms, 0), 5000)
     }
 
     func setCode(_ id: UUID, index: Int) {

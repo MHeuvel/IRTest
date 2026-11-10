@@ -51,6 +51,18 @@ enum Packet {
         return b
     }
 
+    // CMD 03: the key is transmitted for `milliseconds`, then the chip stops by itself (how the original app
+    // sends a Power key with a duration). Payload: ms_hi ms_lo | chipID(4) | 05 | 01 | V_hi V_lo | key | 00
+    static func irPassthroughStopAfter(chip: Chip, deviceType: Int, irCode: Int, keyCode: Int, milliseconds: Int) -> [UInt8]? {
+        guard (1...11).contains(deviceType), (0...0x0FFF).contains(irCode), (1...65535).contains(milliseconds) else { return nil }
+        let key = chip.keyNumber(keyCode)
+        guard key != 0 else { return nil }
+        let v = UInt16(((deviceType - 1) << 12) | irCode)
+        let payload: [UInt8] = [UInt8(milliseconds >> 8), UInt8(milliseconds & 0xFF)]
+            + chip.idBytes + [0x05, 0x01, UInt8(v >> 8), UInt8(v & 0xFF), UInt8(key), 0x00]
+        return build(cmd: 0x03, payload: payload)
+    }
+
     static func irPassthrough(chip: Chip, deviceType: Int, irCode: Int, keyCode: Int, cmd: UInt8 = 0x01) -> [UInt8]? {
         guard (1...11).contains(deviceType), (0...0x0FFF).contains(irCode) else { return nil }
         let key = chip.keyNumber(keyCode)

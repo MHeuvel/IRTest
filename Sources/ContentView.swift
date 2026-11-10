@@ -238,7 +238,7 @@ struct PairBanner: View {
                 Text("No UnityRemote found")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
-                Text("Last used with another phone? Tap Pair / connect.")
+                Text("New device? Tap Pair / connect.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .lineLimit(2)

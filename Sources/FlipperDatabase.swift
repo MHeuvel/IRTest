@@ -1,0 +1,244 @@
+import SwiftUI
+
+// The Flipper-IRDB database (CC0 1.0 Universal) in a compact text file, Sources/FlipperDB.txt.
+// Only keys with a protocol the converter supports are included; raw recordings are left out.
+//
+// Format: "#F|category|brand|model" starts a remote, followed by one line per key:
+//   name|protocol|address|command      (hex, trailing zero bytes left out)
+// Protocol codes: S = Samsung32, N = NEC, X = NECext, N4 = NEC42, N4X = NEC42ext,
+//                 R12/R15/R20 = SIRC, 5 = RC5, 5X = RC5X, 6 = RC6
+
+struct FlipperDBEntry: Identifiable, Hashable {
+    let id: Int
+    let category: String
+    let brand: String
+    let model: String
+    let firstLine: Int
+    let keyCount: Int
+
+    var brandTitle: String { brand == "-" ? "(no brand)" : brand }
+}
+
+final class FlipperDatabase: ObservableObject {
+    static let shared = FlipperDatabase()
+
+    @Published private(set) var loaded = false
+    @Published private(set) var failed = false
+    private var loading = false
+
+    private(set) var entries: [FlipperDBEntry] = []
+    private(set) var categories: [String] = []
+    private var byCategory: [String: [FlipperDBEntry]] = [:]
+    private var lines: [Substring] = []
+
+    static let protocolNames: [String: String] = [
+        "S": "Samsung32", "N": "NEC", "X": "NECext", "N4": "NEC42", "N4X": "NEC42ext",
+        "R12": "SIRC", "R15": "SIRC15", "R20": "SIRC20", "5": "RC5", "5X": "RC5X", "6": "RC6"
+    ]
+
+    func loadIfNeeded() {
+        guard !loaded, !loading else { return }
+        loading = true
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let url = Bundle.main.url(forResource: "FlipperDB", withExtension: "txt"),
+                  let data = try? Data(contentsOf: url),
+                  let text = String(data: data, encoding: .utf8) else {
+                DispatchQueue.main.async {
+                    self?.failed = true
+                    self?.loading = false
+                }
+                return
+            }
+            let lines = text.split(separator: "\n", omittingEmptySubsequences: true)
+            var entries: [FlipperDBEntry] = []
+            var i = 0
+            while i < lines.count {
+                if lines[i].hasPrefix("#F|") {
+                    let p = lines[i].split(separator: "|", omittingEmptySubsequences: false)
+                    var j = i + 1
+                    while j < lines.count && !lines[j].hasPrefix("#F|") { j += 1 }
+                    if p.count >= 4 {
+                        entries.append(FlipperDBEntry(id: entries.count, category: String(p[1]), brand: String(p[2]),
+                                                      model: String(p[3]), firstLine: i + 1, keyCount: j - i - 1))
+                    }
+                    i = j
+                } else {
+                    i += 1
+                }
+            }
+            let grouped = Dictionary(grouping: entries, by: { $0.category })
+            let cats = grouped.keys.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.lines = lines
+                self.entries = entries
+                self.byCategory = grouped
+                self.categories = cats
+                self.loaded = true
+                self.loading = false
+            }
+        }
+    }
+
+    func count(category: String) -> Int { byCategory[category]?.count ?? 0 }
+
+    func brands(in category: String) -> [(brand: String, count: Int)] {
+        let list = byCategory[category] ?? []
+        let grouped = Dictionary(grouping: list, by: { $0.brand })
+        return grouped.map { (brand: $0.key, count: $0.value.count) }
+            .sorted { $0.brand.localizedCaseInsensitiveCompare($1.brand) == .orderedAscending }
+    }
+
+    func models(category: String, brand: String) -> [FlipperDBEntry] {
+        (byCategory[category] ?? []).filter { $0.brand == brand }
+            .sorted { $0.model.localizedCaseInsensitiveCompare($1.model) == .orderedAscending }
+    }
+
+    func search(_ query: String) -> [FlipperDBEntry] {
+        let words = query.lowercased().split(separator: " ").map(String.init)
+        guard !words.isEmpty else { return [] }
+        var result: [FlipperDBEntry] = []
+        for e in entries {
+            let hay = (e.brand + " " + e.model + " " + e.category).lowercased()
+            if words.allSatisfy({ hay.contains($0) }) {
+                result.append(e)
+                if result.count >= 300 { break }
+            }
+        }
+        return result
+    }
+
+    private static func spaced(_ hex: String) -> String {
+        let chars = Array(hex)
+        var bytes: [String] = []
+        var i = 0
+        while i + 1 < chars.count {
+            bytes.append(String(chars[i]) + String(chars[i + 1]))
+            i += 2
+        }
+        while bytes.count < 4 { bytes.append("00") }
+        return bytes.joined(separator: " ")
+    }
+
+    func keys(for entry: FlipperDBEntry) -> [FlipperKey] {
+        var out: [FlipperKey] = []
+        let end = min(lines.count, entry.firstLine + entry.keyCount)
+        var k = entry.firstLine
+        while k < end {
+            let p = lines[k].split(separator: "|", omittingEmptySubsequences: false)
+            k += 1
+            guard p.count == 4, let proto = FlipperDatabase.protocolNames[String(p[1])] else { continue }
+            var key = FlipperKey(name: String(p[0]))
+            key.fields["type"] = "parsed"
+            key.fields["protocol"] = proto
+            key.fields["address"] = FlipperDatabase.spaced(String(p[2]))
+            key.fields["command"] = FlipperDatabase.spaced(String(p[3]))
+            out.append(key)
+        }
+        return out
+    }
+}
+
+// MARK: - Browsing
+
+struct FlipperBrowserView: View {
+    @ObservedObject private var db = FlipperDatabase.shared
+    let onPick: (String, [FlipperKey]) -> Void
+    @State private var query = ""
+
+    private var searching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    var body: some View {
+        List {
+            if db.failed {
+                Text("The database file is missing from this build.")
+                    .foregroundColor(.orange)
+            } else if !db.loaded {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Loading database…")
+                        .foregroundColor(.secondary)
+                }
+            } else if searching {
+                ForEach(db.search(query)) { entry in
+                    FlipperEntryRow(entry: entry, showCategory: true, onPick: onPick)
+                }
+            } else {
+                ForEach(db.categories, id: \.self) { cat in
+                    NavigationLink(destination: FlipperBrandListView(category: cat, onPick: onPick)) {
+                        HStack {
+                            Text(cat)
+                            Spacer()
+                            Text("\(db.count(category: cat))")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .searchable(text: $query, prompt: "Brand or model")
+        .navigationTitle("Flipper database")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { db.loadIfNeeded() }
+    }
+}
+
+struct FlipperBrandListView: View {
+    @ObservedObject private var db = FlipperDatabase.shared
+    let category: String
+    let onPick: (String, [FlipperKey]) -> Void
+
+    var body: some View {
+        List {
+            ForEach(db.brands(in: category), id: \.brand) { item in
+                NavigationLink(destination: FlipperModelListView(category: category, brand: item.brand, onPick: onPick)) {
+                    HStack {
+                        Text(item.brand == "-" ? "(no brand)" : item.brand)
+                        Spacer()
+                        Text("\(item.count)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle(category)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct FlipperModelListView: View {
+    @ObservedObject private var db = FlipperDatabase.shared
+    let category: String
+    let brand: String
+    let onPick: (String, [FlipperKey]) -> Void
+
+    var body: some View {
+        List {
+            ForEach(db.models(category: category, brand: brand)) { entry in
+                FlipperEntryRow(entry: entry, showCategory: false, onPick: onPick)
+            }
+        }
+        .navigationTitle(brand == "-" ? "(no brand)" : brand)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct FlipperEntryRow: View {
+    let entry: FlipperDBEntry
+    let showCategory: Bool
+    let onPick: (String, [FlipperKey]) -> Void
+
+    var body: some View {
+        Button {
+            onPick(entry.model, FlipperDatabase.shared.keys(for: entry))
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.model)
+                    .foregroundColor(.white)
+                Text((showCategory ? entry.category + " · " : "") + entry.brandTitle + " · \(entry.keyCount) keys")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}

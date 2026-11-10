@@ -20,6 +20,7 @@ struct FlipperImportView: View {
     @State private var rows: [Row] = []
     @State private var fileName = ""
     @State private var showPicker = false
+    @State private var showBrowser = false
     @State private var problem: String?
 
     private var convertible: Int { rows.filter { $0.signal != nil }.count }
@@ -42,19 +43,23 @@ struct FlipperImportView: View {
                 rows = []
                 return
             }
-            fileName = url.lastPathComponent
-            rows = keys.map { (key: FlipperKey) -> Row in
-                do {
-                    let signal = try FlipperIR.convert(key)
-                    return Row(key: key, signal: signal, error: nil, selected: true)
-                } catch {
-                    return Row(key: key, signal: nil,
-                               error: (error as? LocalizedError)?.errorDescription ?? "Conversion failed",
-                               selected: false)
-                }
-            }
+            setRows(name: url.lastPathComponent, keys: keys)
         case .failure:
             problem = "Could not open the file."
+        }
+    }
+
+    private func setRows(name: String, keys: [FlipperKey]) {
+        fileName = name
+        rows = keys.map { (key: FlipperKey) -> Row in
+            do {
+                let signal = try FlipperIR.convert(key)
+                return Row(key: key, signal: signal, error: nil, selected: true)
+            } catch {
+                return Row(key: key, signal: nil,
+                           error: (error as? LocalizedError)?.errorDescription ?? "Conversion failed",
+                           selected: false)
+            }
         }
     }
 
@@ -82,7 +87,15 @@ struct FlipperImportView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(footer: Text("Choose a .ir file from Flipper-IRDB (for example from the Files app). Keys with a supported protocol are converted to the chip's format; use Test to check a key before importing.")) {
+                Section(footer: Text("Search the built-in Flipper-IRDB (CC0), or choose a .ir file yourself. Keys with a supported protocol are converted to the chip's format; use Test to check a key before importing. Raw recordings are not included in the built-in list.")) {
+                    NavigationLink(isActive: $showBrowser) {
+                        FlipperBrowserView(onPick: { title, keys in
+                            setRows(name: title, keys: keys)
+                            showBrowser = false
+                        })
+                    } label: {
+                        Text("Search Flipper database")
+                    }
                     Button(rows.isEmpty ? "Choose Flipper .ir file" : "Choose another file") {
                         showPicker = true
                     }
@@ -92,7 +105,7 @@ struct FlipperImportView: View {
                 }
 
                 if !rows.isEmpty {
-                    Section(header: Text("\(fileName): \(convertible) of \(rows.count) keys can be converted")) {
+                    Section(header: Text("\(fileName): \(convertible) of \(rows.count) keys can be converted").textCase(nil)) {
                         HStack {
                             Button("Select all") { setAll(true) }
                                 .buttonStyle(.borderless)

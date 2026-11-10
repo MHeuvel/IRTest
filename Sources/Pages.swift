@@ -30,7 +30,7 @@ struct MainSpec {
     let row3: [RemoteKey]
 
     static let tv = MainSpec(
-        row1: [K.input, K.menu, K.guide, K.info],
+        row1: [K.input, K.tvMenu, K.guide, K.info],
         left: CapsuleSpec(label: "CH", up: K.channelUp, down: K.channelDown, upIcon: "chevron.up", downIcon: "chevron.down"),
         right: CapsuleSpec(label: "VOL", up: K.volumeUp, down: K.volumeDown, upIcon: "plus", downIcon: "minus"),
         row3: [K.back, K.exit, K.mute, K.last]

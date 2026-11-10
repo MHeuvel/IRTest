@@ -230,9 +230,20 @@ struct CodePickerView: View {
     @Environment(\.dismiss) private var dismiss
     let device: Device
 
+    private var current: Device { store.devices.first { $0.id == device.id } ?? device }
+
     var body: some View {
         NavigationView {
             List {
+                Section(header: Text("Power key"),
+                        footer: Text("Some devices only react when the Power key is held. Off sends Power once, as usual. Otherwise the Power key is transmitted for this long.")) {
+                    Stepper(value: Binding(get: { current.powerHoldMs },
+                                           set: { store.setPowerHold(device.id, ms: $0) }),
+                            in: 0...5000, step: 250) {
+                        Text(current.powerHoldMs == 0 ? "Hold Power: off" : "Hold Power: \(current.powerHoldMs) ms")
+                    }
+                }
+                Section(header: Text("Code")) {
                 ForEach(Array(device.codes.enumerated()), id: \.offset) { index, entry in
                     Button {
                         store.setCode(device.id, index: index)
@@ -248,6 +259,7 @@ struct CodePickerView: View {
                             }
                         }
                     }
+                }
                 }
             }
             .navigationTitle("\(device.brand) · code")
@@ -317,7 +329,7 @@ struct SettingsView: View {
                 }
             }
             Section(header: Text("Connection"),
-                    footer: Text("iOS shows its own list when you tap Pair / connect. It stays empty for a unit that is already paired with this phone. If the unit was last used with another phone, connect it once in iOS Settings > Bluetooth.")) {
+                    footer: Text("Use Pair / connect to set up a new UnityRemote. The iOS list only shows units that are not yet paired with this phone, so it stays empty for a unit you have already set up. If such a unit does not connect, connect it in iOS Settings > Bluetooth.")) {
                 LabeledContent("Status", value: statusText)
                 Button("Reconnect") { remote.reconnect() }
                 Button("Pair / connect UnityRemote") { remote.pairOrConnect() }
@@ -348,7 +360,7 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.10")
+                Text("UnityIRedux 0.11")
                     .foregroundColor(.secondary)
             }
         }

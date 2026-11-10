@@ -26,7 +26,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     private var pending = [UInt8]()
     private var rxBuffer = [UInt8]()
     private var noticeTimer: DispatchWorkItem?
-    private var irQueue: [(bytes: [UInt8], label: String)] = []
+    private var irQueue: [(bytes: [UInt8], label: String, busy: TimeInterval)] = []
     private var irBusy = false
     private var busyTimer: DispatchWorkItem?
     private var learnTimer: DispatchWorkItem?
@@ -224,6 +224,13 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
             warn()
             return
         }
+        if key == K.power, device.powerHoldMs > 0,
+           let hold = Packet.irPassthroughStopAfter(chip: chip, deviceType: entry.base, irCode: entry.code,
+                                                    keyCode: key.slot, milliseconds: device.powerHoldMs) {
+            enqueueIR(hold, label: "\(key.title) hold \(device.powerHoldMs) ms · \(device.brand) \(entry.code) · type \(entry.base) · \(chip.title)",
+                      busy: max(1.5, Double(device.powerHoldMs) / 1000 + 0.8))
+            return
+        }
         enqueueIR(p, label: "\(key.title) · \(device.brand) \(entry.code) · type \(entry.base) · \(chip.title)")
     }
 
@@ -298,25 +305,25 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         enqueueIR(Packet.build(cmd: 0x01, payload: payload), label: "LEARNED \(label) · \(signal.count) bytes")
     }
 
-    private func enqueueIR(_ bytes: [UInt8], label: String) {
+    private func enqueueIR(_ bytes: [UInt8], label: String, busy: TimeInterval = 1.5) {
         if irBusy {
             if irQueue.count < 5 {
-                irQueue.append((bytes: bytes, label: label))
+                irQueue.append((bytes: bytes, label: label, busy: busy))
             } else {
                 addLog("Queue full: \(label) skipped")
             }
             return
         }
-        startIR(bytes, label: label)
+        startIR(bytes, label: label, busy: busy)
     }
 
-    private func startIR(_ bytes: [UInt8], label: String) {
+    private func startIR(_ bytes: [UInt8], label: String, busy: TimeInterval = 1.5) {
         irBusy = true
         send(bytes, label: label)
         busyTimer?.cancel()
         let work = DispatchWorkItem { [weak self] in self?.finishIR() }
         busyTimer = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + busy, execute: work)
     }
 
     private func finishIR() {
@@ -325,7 +332,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         irBusy = false
         if !irQueue.isEmpty {
             let next = irQueue.removeFirst()
-            startIR(next.bytes, label: next.label)
+            startIR(next.bytes, label: next.label, busy: next.busy)
         }
     }
 

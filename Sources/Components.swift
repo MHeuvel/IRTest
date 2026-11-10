@@ -41,6 +41,7 @@ enum K {
     static let record = RemoteKey(slot: 29, title: "Record")
     static let sourceMenu = RemoteKey(slot: 33, title: "Source")
     static let menu = RemoteKey(slot: 34, title: "Menu")
+    static let tvMenu = RemoteKey(slot: 33, title: "Menu")   // on a TV the Gondar II key 29 is Menu (checked against the database)
     static let guide = RemoteKey(slot: 35, title: "Guide")
     static let title = RemoteKey(slot: 35, title: "Title")
     static let exit = RemoteKey(slot: 36, title: "Exit")
