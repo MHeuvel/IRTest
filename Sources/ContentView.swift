@@ -347,7 +347,11 @@ struct RemoteContent: View {
     let onImport: () -> Void
 
     private var layout: LayoutKind { device.typeInfo.layout }
-    private var pages: [PageKind] { layout.pages }
+    private var config: KeyConfig { device.keyConfig }
+    private var pages: [PageKind] {
+        let visible = layout.pages.filter { !config.isEmpty($0, layout: layout) }
+        return visible.isEmpty ? layout.pages : visible
+    }
     private var active: PageKind { pages.contains(page) ? page : pages[0] }
     private var homeKey: Bool { device.currentCode?.base == 11 }
 
@@ -390,17 +394,24 @@ struct RemoteContent: View {
     private var standardPage: some View {
         PageView(layout: layout, page: active, width: width, press: press, home: homeKey,
                  holdStart: { remote.startContinuous($0, device: device) },
-                 holdEnd: { remote.stopContinuous() })
+                 holdEnd: { remote.stopContinuous() },
+                 config: config)
     }
 
     var body: some View {
         VStack(spacing: 12) {
             VStack(spacing: 12) {
-                if !device.isLearnedRemote {
+                if !device.isLearnedRemote && [K.power, K.powerOn, K.powerOff].contains(where: { config.shows($0) }) {
                     HStack(spacing: 10) {
-                        PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
-                        PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
-                        PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+                        if config.shows(K.power) {
+                            PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)
+                        }
+                        if config.shows(K.powerOn) {
+                            PillKey(key: K.powerOn, icon: "power", tint: .green, height: 38, press: press)
+                        }
+                        if config.shows(K.powerOff) {
+                            PillKey(key: K.powerOff, icon: "power", tint: .red, height: 38, press: press)
+                        }
                     }
                 }
                 Group {
