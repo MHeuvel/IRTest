@@ -6,8 +6,7 @@ struct DevicesView: View {
     @EnvironmentObject var remote: RemoteController
     @Environment(\.dismiss) private var dismiss
     @State private var showAdd = false
-    @State private var renameTarget: Device?
-    @State private var newName = ""
+    @State private var editTarget: Device?
 
     var body: some View {
         NavigationView {
@@ -41,10 +40,9 @@ struct DevicesView: View {
                                 Label("Delete", systemImage: "trash")
                             }
                             Button {
-                                renameTarget = d
-                                newName = d.name
+                                editTarget = d
                             } label: {
-                                Label("Rename", systemImage: "pencil")
+                                Label("Edit", systemImage: "slider.horizontal.3")
                             }
                             .tint(.blue)
                         }
@@ -75,15 +73,10 @@ struct DevicesView: View {
                 })
                 .environmentObject(store)
             }
-            .alert("Rename device",
-                   isPresented: Binding(get: { renameTarget != nil },
-                                        set: { if !$0 { renameTarget = nil } })) {
-                TextField("Name", text: $newName)
-                Button("Save") {
-                    if let t = renameTarget { store.rename(t.id, to: newName) }
-                    renameTarget = nil
-                }
-                Button("Cancel", role: .cancel) { renameTarget = nil }
+            .sheet(item: $editTarget) { d in
+                DeviceEditView(deviceID: d.id)
+                    .environmentObject(store)
+                    .environmentObject(remote)
             }
         }
         .overlay { NoticeView() }
@@ -230,19 +223,9 @@ struct CodePickerView: View {
     @Environment(\.dismiss) private var dismiss
     let device: Device
 
-    private var current: Device { store.devices.first { $0.id == device.id } ?? device }
-
     var body: some View {
         NavigationView {
             List {
-                Section(header: Text("Power key"),
-                        footer: Text("Some devices only react when the Power key is held. Off sends Power once, as usual. Otherwise the Power key is transmitted for this long.")) {
-                    Stepper(value: Binding(get: { current.powerHoldMs },
-                                           set: { store.setPowerHold(device.id, ms: $0) }),
-                            in: 0...5000, step: 250) {
-                        Text(current.powerHoldMs == 0 ? "Hold Power: off" : "Hold Power: \(current.powerHoldMs) ms")
-                    }
-                }
                 Section(header: Text("Code")) {
                 ForEach(Array(device.codes.enumerated()), id: \.offset) { index, entry in
                     Button {
@@ -360,7 +343,7 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.11")
+                Text("UnityIRedux 0.12")
                     .foregroundColor(.secondary)
             }
         }

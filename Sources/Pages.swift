@@ -44,72 +44,125 @@ struct MainSpec {
     )
 }
 
+struct PillGrid: View {
+    let keys: [RemoteKey]
+    let press: (RemoteKey) -> Void
+
+    var body: some View {
+        let rows = stride(from: 0, to: keys.count, by: 4).map { Array(keys[$0..<min($0 + 4, keys.count)]) }
+        VStack(spacing: 14) {
+            ForEach(0..<rows.count, id: \.self) { r in
+                HStack(spacing: 10) {
+                    ForEach(rows[r], id: \.self) { key in
+                        PillKey(key: key, press: press)
+                    }
+                    ForEach(0..<(4 - rows[r].count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct MainPage: View {
     let spec: MainSpec
     let width: CGFloat
+    let block: [RemoteKey]
+    let config: KeyConfig
     let press: (RemoteKey) -> Void
-    var home: Bool = false
     var holdStart: (RemoteKey) -> Void = { _ in }
     var holdEnd: () -> Void = {}
+
+    private func shown(_ c: CapsuleSpec) -> Bool { config.shows(c.up) || config.shows(c.down) }
 
     var body: some View {
         let cap = min(76, width * 0.2)
         let pad = min(230, width - 2 * cap - 16)
-        let row1 = home ? spec.row1.map { $0 == K.input ? K.home : $0 } : spec.row1
+        let showLeft = shown(spec.left)
+        let showRight = shown(spec.right)
+        let showPad = config.shows(.arrows)
         VStack(spacing: 14) {
-            PillRow(keys: row1, press: press)
-            HStack(spacing: 8) {
-                CapsuleKeys(spec: spec.left, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
-                DPad(size: pad, press: press)
-                CapsuleKeys(spec: spec.right, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
+            if showLeft || showRight || showPad {
+                HStack(spacing: 8) {
+                    if showLeft {
+                        CapsuleKeys(spec: spec.left, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
+                    } else {
+                        Color.clear.frame(width: cap, height: pad)
+                    }
+                    if showPad {
+                        DPad(size: pad, press: press)
+                    } else {
+                        Color.clear.frame(width: pad, height: pad)
+                    }
+                    if showRight {
+                        CapsuleKeys(spec: spec.right, width: cap, height: pad, press: press, holdStart: holdStart, holdEnd: holdEnd)
+                    } else {
+                        Color.clear.frame(width: cap, height: pad)
+                    }
+                }
             }
-            PillRow(keys: spec.row3, press: press)
+            if !block.isEmpty {
+                PillGrid(keys: block, press: press)
+            }
         }
     }
 }
 
 struct DiscMenuPage: View {
     let width: CGFloat
+    let block: [RemoteKey]
+    let config: KeyConfig
     let press: (RemoteKey) -> Void
 
     var body: some View {
         VStack(spacing: 14) {
-            PillRow(keys: [K.menu, K.title, K.info, K.eject], press: press)
-            DPad(size: min(250, width - 20), press: press)
-            PillRow(keys: [K.back, K.exit, K.repeatKey, K.random], press: press)
+            if config.shows(.arrows) {
+                DPad(size: min(250, width - 20), press: press)
+            }
+            if !block.isEmpty {
+                PillGrid(keys: block, press: press)
+            }
         }
     }
 }
 
 struct NumbersPage: View {
     let layout: LayoutKind
+    let config: KeyConfig
     let press: (RemoteKey) -> Void
+
+    private var corner: (key: RemoteKey, icon: String) {
+        switch layout {
+        case .tv, .learned: return (key: K.last, icon: "arrow.uturn.backward")
+        case .disc: return (key: K.eject, icon: "eject.fill")
+        case .audio: return (key: K.input, icon: "rectangle.portrait.and.arrow.right")
+        }
+    }
 
     var body: some View {
         VStack(spacing: 10) {
-            ForEach(0..<3, id: \.self) { row in
-                HStack(spacing: 10) {
-                    ForEach(0..<3, id: \.self) { col in
-                        let key = K.digits[row * 3 + col]
-                        CellKey(key: key, text: key.title, press: press)
+            if config.shows(.digits) {
+                ForEach(0..<3, id: \.self) { row in
+                    HStack(spacing: 10) {
+                        ForEach(0..<3, id: \.self) { col in
+                            let key = K.digits[row * 3 + col]
+                            CellKey(key: key, text: key.title, press: press)
+                        }
                     }
                 }
             }
             HStack(spacing: 10) {
-                switch layout {
-                case .tv, .learned:
-                    CellKey(key: K.last, icon: "arrow.uturn.backward", press: press)
-                case .disc:
-                    CellKey(key: K.eject, icon: "eject.fill", press: press)
-                case .audio:
-                    CellKey(key: K.input, icon: "rectangle.portrait.and.arrow.right", press: press)
+                if config.shows(corner.key) {
+                    CellKey(key: corner.key, icon: corner.icon, press: press)
                 }
-                CellKey(key: K.zero, text: "0", press: press)
-                switch layout {
-                case .disc:
-                    CellKey(key: K.plus10, text: "+10", press: press)
-                default:
-                    CellKey(key: K.enter, text: "Enter", press: press)
+                if config.shows(.digits) {
+                    CellKey(key: K.zero, text: "0", press: press)
+                    if layout == .disc {
+                        CellKey(key: K.plus10, text: "+10", press: press)
+                    } else {
+                        CellKey(key: K.enter, text: "Enter", press: press)
+                    }
                 }
             }
         }
@@ -120,13 +173,14 @@ struct MediaPage: View {
     typealias Item = (key: RemoteKey, icon: String, tint: Color)
 
     let layout: LayoutKind
+    let config: KeyConfig
     let press: (RemoteKey) -> Void
 
-    private func item(_ key: RemoteKey, _ icon: String, _ tint: Color = Color.white) -> Item {
+    private static func item(_ key: RemoteKey, _ icon: String, _ tint: Color = Color.white) -> Item {
         (key: key, icon: icon, tint: tint)
     }
 
-    private var rows: [[Item]] {
+    static func rows(_ layout: LayoutKind) -> [[Item]] {
         let transport: [Item] = [
             item(K.reverse, "backward.fill"),
             item(K.play, "play.fill"),
@@ -155,6 +209,16 @@ struct MediaPage: View {
         }
     }
 
+    static func keys(_ layout: LayoutKind) -> [RemoteKey] {
+        rows(layout).flatMap { row in row.map { $0.key } }
+    }
+
+    private var rows: [[Item]] {
+        MediaPage.rows(layout)
+            .map { row in row.filter { config.shows($0.key) } }
+            .filter { !$0.isEmpty }
+    }
+
     var body: some View {
         VStack(spacing: 10) {
             ForEach(0..<rows.count, id: \.self) { r in
@@ -176,24 +240,26 @@ struct PageView: View {
     var home: Bool = false
     var holdStart: (RemoteKey) -> Void = { _ in }
     var holdEnd: () -> Void = {}
+    var config: KeyConfig = KeyConfig()
 
     var body: some View {
         VStack(spacing: 14) {
             switch page {
             case .remote: remotePage
-            case .numbers: NumbersPage(layout: layout, press: press)
-            case .media: MediaPage(layout: layout, press: press)
+            case .numbers: NumbersPage(layout: layout, config: config, press: press)
+            case .media: MediaPage(layout: layout, config: config, press: press)
             case .custom: EmptyView()
             }
-            if showsColors { ColorRow(press: press) }
+            if showsColors && config.shows(.colors) { ColorRow(press: press) }
         }
     }
 
     @ViewBuilder private var remotePage: some View {
+        let block = config.blockKeys(layout: layout, home: home)
         switch layout {
-        case .tv: MainPage(spec: .tv, width: width, press: press, home: home, holdStart: holdStart, holdEnd: holdEnd)
-        case .audio: MainPage(spec: .audio, width: width, press: press, home: home, holdStart: holdStart, holdEnd: holdEnd)
-        case .disc: DiscMenuPage(width: width, press: press)
+        case .tv: MainPage(spec: .tv, width: width, block: block, config: config, press: press, holdStart: holdStart, holdEnd: holdEnd)
+        case .audio: MainPage(spec: .audio, width: width, block: block, config: config, press: press, holdStart: holdStart, holdEnd: holdEnd)
+        case .disc: DiscMenuPage(width: width, block: block, config: config, press: press)
         case .learned: EmptyView()
         }
     }
