@@ -47,6 +47,9 @@ struct ContentView: View {
                                       onEditKey: { editingKey = $0 },
                                       onReorder: { showReorder = true },
                                       onImport: { showFlipperImport = true })
+                            .environment(\.keyLabeler, KeyLabeler(label: { key in
+                                device.shownName(key, chip: remote.chip)
+                            }))
                     } else {
                         EmptyState(sheet: $sheet)
                     }

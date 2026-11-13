@@ -80,6 +80,7 @@ struct PillKey: View {
     var tint: Color = .white
     var height: CGFloat = 44
     let press: (RemoteKey) -> Void
+    @Environment(\.keyLabeler) private var labeler
 
     var body: some View {
         Button { press(key) } label: {
@@ -87,7 +88,10 @@ struct PillKey: View {
                 if let icon = icon {
                     Image(systemName: icon).font(.system(size: 14, weight: .semibold))
                 }
-                Text(key.title).font(.system(size: 15, weight: .semibold))
+                Text(labeler.label(key) ?? key.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
             .foregroundColor(tint)
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
@@ -119,12 +123,26 @@ struct CellKey: View {
     var icon: String? = nil
     var tint: Color = .white
     let press: (RemoteKey) -> Void
+    @Environment(\.keyLabeler) private var labeler
+
+    // An icon key shows the name of its code when that name means something else than the icon
+    private var ownName: String? {
+        guard text == nil, icon != nil, let name = labeler.label(key) else { return nil }
+        return KeyWords.matches(name, title: key.title) ? nil : name
+    }
 
     var body: some View {
         Button { press(key) } label: {
             Group {
                 if let text = text {
                     Text(text).font(.system(size: 26, weight: .semibold))
+                } else if let name = ownName {
+                    Text(name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.6)
+                        .padding(.horizontal, 4)
                 } else if let icon = icon {
                     Image(systemName: icon).font(.system(size: 24, weight: .semibold))
                 }

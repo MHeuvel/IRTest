@@ -17,6 +17,7 @@ struct Device: Identifiable, Codable, Hashable {
     var brand: String
     var codeIndex: Int = 0
     var learnedKeys: [LearnedKey] = []
+    var keyNames: [String: String] = [:]   // own names for buttons, key slot -> name
     var hiddenKeys: [Int] = []    // key slots the user has hidden (see KeyConfig)
     var extraKeys: [Int] = []     // extra key slots the user has added to the block of buttons
     var powerHoldMs: Int = 0      // 0 = Power is sent once; otherwise the Power key is transmitted for this long (CMD 03)
@@ -38,6 +39,7 @@ struct Device: Identifiable, Codable, Hashable {
         learnedKeys = try c.decodeIfPresent([LearnedKey].self, forKey: .learnedKeys) ?? []
         powerHoldMs = try c.decodeIfPresent(Int.self, forKey: .powerHoldMs) ?? 0
         hiddenKeys = try c.decodeIfPresent([Int].self, forKey: .hiddenKeys) ?? []
+        keyNames = try c.decodeIfPresent([String: String].self, forKey: .keyNames) ?? [:]
         extraKeys = try c.decodeIfPresent([Int].self, forKey: .extraKeys) ?? []
     }
 
@@ -129,6 +131,17 @@ final class DeviceStore: ObservableObject {
             if shown { hidden.remove(slot) } else { hidden.insert(slot) }
         }
         devices[i].hiddenKeys = hidden.sorted()
+    }
+
+    // Own name for a button; an empty name removes it
+    func setKeyName(_ id: UUID, slot: Int, name: String?) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        let trimmed = (name ?? "").trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty {
+            devices[i].keyNames.removeValue(forKey: String(slot))
+        } else {
+            devices[i].keyNames[String(slot)] = trimmed
+        }
     }
 
     func resetKeys(_ id: UUID) {

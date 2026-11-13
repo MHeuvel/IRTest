@@ -9,6 +9,8 @@ struct DeviceEditView: View {
     let deviceID: UUID
     @State private var name = ""
     @State private var loaded = false
+    @State private var renameKey: RemoteKey?
+    @State private var renameText = ""
 
     private var device: Device? { store.devices.first { $0.id == deviceID } }
 
@@ -58,6 +60,21 @@ struct DeviceEditView: View {
                 }
             }
             .onDisappear { save() }
+            .alert("Name for this button", isPresented: Binding(get: { renameKey != nil },
+                                                                 set: { if !$0 { renameKey = nil } })) {
+                TextField("Name", text: $renameText)
+                Button("Save") {
+                    if let k = renameKey { store.setKeyName(deviceID, slot: k.slot, name: renameText) }
+                    renameKey = nil
+                }
+                Button("Use name from code") {
+                    if let k = renameKey { store.setKeyName(deviceID, slot: k.slot, name: nil) }
+                    renameKey = nil
+                }
+                Button("Cancel", role: .cancel) { renameKey = nil }
+            } message: {
+                Text("Your own name for this button on this device. Empty or \"Use name from code\" shows the name the code gives it.")
+            }
         }
         .overlay { NoticeView() }
         .animation(.easeInOut(duration: 0.15), value: remote.notice)
@@ -87,7 +104,7 @@ struct DeviceEditView: View {
 
     private func blockSection(_ d: Device) -> some View {
         Section(header: Text("Buttons block"),
-                footer: Text("Use Test to see which buttons this device reacts to, and switch off the ones that do nothing. Hidden buttons disappear and the others move up. A page without buttons leaves the page bar.")) {
+                footer: Text("The name shown is the name this code gives the key in the original database, or your own name (pencil). Use Test to see what a button does, and switch off the ones that do nothing. Hidden buttons disappear and the others move up. A page without buttons leaves the page bar.")) {
             ForEach(d.typeInfo.layout.defaultBlock, id: \.self) { key in
                 keyRow(d, key, extra: false,
                        label: (d.currentCode?.base == 11 && key == K.input) ? "Home" : nil)
@@ -136,9 +153,26 @@ struct DeviceEditView: View {
         let cfg = d.keyConfig
         let on = extra ? (cfg.extras.contains(key.slot) && cfg.shows(key)) : cfg.shows(key)
         let onChip = remote.chip.keyNumber(key.slot) != 0
+        let standard = label ?? key.title
+        let custom = d.customName(key.slot)
+        let db = d.databaseName(key, chip: remote.chip)
+        let hasList = d.codeNames(chip: remote.chip) != nil
+        var notes: [String] = []
+        if custom != nil {
+            notes.append("Your name · code: \(db ?? "no name") · standard: \(standard)")
+        } else if let db = db, db.lowercased() != standard.lowercased() {
+            notes.append("Standard name: \(standard)")
+        } else if db == nil && hasList && onChip {
+            notes.append("This code gives it no name")
+        }
         return HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(label ?? key.title)
+                Text(custom ?? db ?? standard)
+                ForEach(notes, id: \.self) { note in
+                    Text(note)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
                 if !onChip {
                     Text("Not available on \(remote.chip.title)")
                         .font(.system(size: 12))
@@ -146,6 +180,13 @@ struct DeviceEditView: View {
                 }
             }
             Spacer()
+            Button {
+                renameText = custom ?? ""
+                renameKey = key
+            } label: {
+                Image(systemName: "pencil")
+            }
+            .buttonStyle(.borderless)
             Button("Test") {
                 remote.send(key, device: d)
             }
