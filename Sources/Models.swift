@@ -10,6 +10,12 @@ struct LearnedKey: Identifiable, Codable, Hashable {
     var skip: Int
 }
 
+// A Flipper key (or other signal) that is sent when a standard button is pressed
+struct SlotSignal: Codable, Hashable {
+    var name: String
+    var signal: [UInt8]
+}
+
 struct Device: Identifiable, Codable, Hashable {
     var id = UUID()
     var name: String
@@ -17,6 +23,8 @@ struct Device: Identifiable, Codable, Hashable {
     var brand: String
     var codeIndex: Int = 0
     var learnedKeys: [LearnedKey] = []
+    var slotSignals: [String: SlotSignal] = [:]   // standard button (slot) -> imported signal, replaces the chip's own key
+    var flipperLayout: String? = nil              // "tv", "audio" or "disc": standard pages for a learned remote
     var keyNames: [String: String] = [:]   // own names for buttons, key slot -> name
     var hiddenKeys: [Int] = []    // key slots the user has hidden (see KeyConfig)
     var extraKeys: [Int] = []     // extra key slots the user has added to the block of buttons
@@ -40,12 +48,28 @@ struct Device: Identifiable, Codable, Hashable {
         powerHoldMs = try c.decodeIfPresent(Int.self, forKey: .powerHoldMs) ?? 0
         hiddenKeys = try c.decodeIfPresent([Int].self, forKey: .hiddenKeys) ?? []
         keyNames = try c.decodeIfPresent([String: String].self, forKey: .keyNames) ?? [:]
+        slotSignals = try c.decodeIfPresent([String: SlotSignal].self, forKey: .slotSignals) ?? [:]
+        flipperLayout = try c.decodeIfPresent(String.self, forKey: .flipperLayout)
         extraKeys = try c.decodeIfPresent([Int].self, forKey: .extraKeys) ?? []
     }
 
     var codes: [CodeEntry] { Catalog.codes(type: type, brand: brand) }
     var typeInfo: DeviceType { Catalog.type(type) }
     var isLearnedRemote: Bool { type == 0 }
+
+    // Pages of the device. A learned remote has only the Custom page, unless the user gives it standard pages
+    var layout: LayoutKind {
+        if isLearnedRemote {
+            switch flipperLayout {
+            case "tv": return .tv
+            case "audio": return .audio
+            case "disc": return .disc
+            default: return .learned
+            }
+        }
+        return typeInfo.layout
+    }
+    var hasStandardPages: Bool { layout != .learned }
 
     var subtitle: String {
         isLearnedRemote ? "Learned remote" : "\(brand) · \(typeInfo.name)"
@@ -142,6 +166,26 @@ final class DeviceStore: ObservableObject {
         } else {
             devices[i].keyNames[String(slot)] = trimmed
         }
+    }
+
+    func setSlotSignal(_ id: UUID, slot: Int, name: String, signal: [UInt8]) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        devices[i].slotSignals[String(slot)] = SlotSignal(name: name, signal: signal)
+    }
+
+    func clearSlotSignal(_ id: UUID, slot: Int) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        devices[i].slotSignals.removeValue(forKey: String(slot))
+    }
+
+    func clearSlotSignals(_ id: UUID) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        devices[i].slotSignals = [:]
+    }
+
+    func setFlipperLayout(_ id: UUID, _ value: String?) {
+        guard let i = devices.firstIndex(where: { $0.id == id }) else { return }
+        devices[i].flipperLayout = (value?.isEmpty ?? true) ? nil : value
     }
 
     func resetKeys(_ id: UUID) {

@@ -207,8 +207,17 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
 
     func send(_ key: RemoteKey, device: Device?) {
         clearNotice()
-        guard let device = device, let entry = device.currentCode else {
+        guard let device = device else {
             showNotice("Choose a device first")
+            warn()
+            return
+        }
+        if let own = device.slotSignals[String(key.slot)] {
+            sendLearned(own.signal, label: "\(key.title) · \(own.name)")
+            return
+        }
+        guard let entry = device.currentCode else {
+            showNotice(device.isLearnedRemote ? "No signal for this button" : "Choose a device first")
             warn()
             return
         }
@@ -240,7 +249,17 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
     // The chip needs about 0.5 s per command, so a stop is never sent sooner than that after the start.
     func startContinuous(_ key: RemoteKey, device: Device?) {
         clearNotice()
-        guard let device = device, let entry = device.currentCode else { return }
+        guard let device = device else { return }
+        if let own = device.slotSignals[String(key.slot)] {
+            // Only the chip's own keys can be held; an imported signal is sent once
+            sendLearned(own.signal, label: "\(key.title) · \(own.name)")
+            return
+        }
+        guard let entry = device.currentCode else {
+            showNotice("No signal for this button")
+            warn()
+            return
+        }
         guard status == .connected else {
             addLog("HOLD ignored: not connected")
             showNotice("Not connected")

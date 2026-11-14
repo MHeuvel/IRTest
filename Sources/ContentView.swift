@@ -349,7 +349,7 @@ struct RemoteContent: View {
     let onReorder: () -> Void
     let onImport: () -> Void
 
-    private var layout: LayoutKind { device.typeInfo.layout }
+    private var layout: LayoutKind { device.layout }
     private var config: KeyConfig { device.keyConfig }
     private var pages: [PageKind] {
         let visible = layout.pages.filter { !config.isEmpty($0, layout: layout) }
@@ -404,7 +404,7 @@ struct RemoteContent: View {
     var body: some View {
         VStack(spacing: 12) {
             VStack(spacing: 12) {
-                if !device.isLearnedRemote && [K.power, K.powerOn, K.powerOff].contains(where: { config.shows($0) }) {
+                if device.hasStandardPages && [K.power, K.powerOn, K.powerOff].contains(where: { config.shows($0) }) {
                     HStack(spacing: 10) {
                         if config.shows(K.power) {
                             PillKey(key: K.power, icon: "power", tint: .white, height: 38, press: press)

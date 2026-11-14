@@ -28,13 +28,19 @@ struct DeviceEditView: View {
                     Section(header: Text("Name")) {
                         TextField("Name", text: $name)
                     }
-                    if !d.isLearnedRemote {
-                        powerSection(d)
+                    if d.isLearnedRemote {
+                        flipperPagesSection(d)
+                    }
+                    if d.hasStandardPages {
+                        if !d.isLearnedRemote {
+                            powerSection(d)
+                        }
                         powerButtonsSection(d)
                         blockSection(d)
                         extraSection(d)
                         groupSection(d)
                         mediaSection(d)
+                        flipperKeysSection(d)
                         Section {
                             Button("Back to standard buttons") {
                                 store.resetKeys(d.id)
@@ -105,7 +111,7 @@ struct DeviceEditView: View {
     private func blockSection(_ d: Device) -> some View {
         Section(header: Text("Buttons block"),
                 footer: Text("The name shown is the name this code gives the key in the original database, or your own name (pencil). Use Test to see what a button does, and switch off the ones that do nothing. Hidden buttons disappear and the others move up. A page without buttons leaves the page bar.")) {
-            ForEach(d.typeInfo.layout.defaultBlock, id: \.self) { key in
+            ForEach(d.layout.defaultBlock, id: \.self) { key in
                 keyRow(d, key, extra: false,
                        label: (d.currentCode?.base == 11 && key == K.input) ? "Home" : nil)
             }
@@ -115,14 +121,14 @@ struct DeviceEditView: View {
     private func extraSection(_ d: Device) -> some View {
         Section(header: Text("More buttons"),
                 footer: Text("Other keys the Gear4 knows. When switched on they are added to the buttons block.")) {
-            ForEach(d.typeInfo.layout.extraKeys, id: \.self) { key in
+            ForEach(d.layout.extraKeys, id: \.self) { key in
                 keyRow(d, key, extra: true)
             }
         }
     }
 
     private func groupSection(_ d: Device) -> some View {
-        let layout = d.typeInfo.layout
+        let layout = d.layout
         return Section(header: Text("Groups")) {
             ForEach(KeyGroup.groups(for: layout)) { group in
                 Toggle(group.title(layout), isOn: Binding(
@@ -136,7 +142,7 @@ struct DeviceEditView: View {
     private func mediaSection(_ d: Device) -> some View {
         var seen = Set<RemoteKey>()
         var keys: [RemoteKey] = []
-        for k in MediaPage.keys(d.typeInfo.layout) where !seen.contains(k) {
+        for k in MediaPage.keys(d.layout) where !seen.contains(k) {
             seen.insert(k)
             keys.append(k)
         }
@@ -149,32 +155,63 @@ struct DeviceEditView: View {
 
     // MARK: - One key: name, whether the chip has it, Test and a switch
 
+    private func flipperPagesSection(_ d: Device) -> some View {
+        Section(header: Text("Standard pages"),
+                footer: Text("Show the remote, numbers and media pages for this learned remote. Keys you import from Flipper with matching names are put on these buttons.")) {
+            Picker("Pages", selection: Binding(get: { d.flipperLayout ?? "" },
+                                               set: { store.setFlipperLayout(d.id, $0) })) {
+                Text("Custom page only").tag("")
+                Text("TV").tag("tv")
+                Text("Audio").tag("audio")
+                Text("Disc player").tag("disc")
+            }
+        }
+    }
+
+    @ViewBuilder private func flipperKeysSection(_ d: Device) -> some View {
+        if !d.slotSignals.isEmpty {
+            Section(header: Text("Flipper keys"),
+                    footer: Text("\(d.slotSignals.count) standard buttons send an imported signal instead of the chip's own key. Touch and hold a button's row to remove just that one.")) {
+                Button("Remove all Flipper keys", role: .destructive) {
+                    store.clearSlotSignals(d.id)
+                }
+            }
+        }
+    }
+
+    // MARK: - One key: name, whether the chip has it, Test and a switch
+
     private func keyRow(_ d: Device, _ key: RemoteKey, extra: Bool, label: String? = nil) -> some View {
         let cfg = d.keyConfig
         let on = extra ? (cfg.extras.contains(key.slot) && cfg.shows(key)) : cfg.shows(key)
+        let own = d.slotSignals[String(key.slot)]
+        let hasCode = d.currentCode != nil
         let onChip = remote.chip.keyNumber(key.slot) != 0
         let standard = label ?? key.title
         let custom = d.customName(key.slot)
         let db = d.databaseName(key, chip: remote.chip)
         let hasList = d.codeNames(chip: remote.chip) != nil
         var notes: [String] = []
+        if let own = own {
+            notes.append("Flipper key: \(own.name)")
+        }
         if custom != nil {
             notes.append("Your name · code: \(db ?? "no name") · standard: \(standard)")
-        } else if let db = db, db.lowercased() != standard.lowercased() {
+        } else if own == nil, let db = db, db.lowercased() != standard.lowercased() {
             notes.append("Standard name: \(standard)")
-        } else if db == nil && hasList && onChip {
+        } else if own == nil, db == nil, hasList, onChip {
             notes.append("This code gives it no name")
         }
         return HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(custom ?? db ?? standard)
+                Text(custom ?? (own == nil ? db : nil) ?? standard)
                 ForEach(notes, id: \.self) { note in
                     Text(note)
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
-                if !onChip {
-                    Text("Not available on \(remote.chip.title)")
+                if own == nil && (hasCode ? !onChip : true) {
+                    Text(hasCode ? "Not available on \(remote.chip.title)" : "No signal assigned")
                         .font(.system(size: 12))
                         .foregroundColor(.orange)
                 }
@@ -197,6 +234,15 @@ struct DeviceEditView: View {
                 set: { store.setKey(d.id, key: key, shown: $0, extra: extra) }
             ))
             .labelsHidden()
+        }
+        .contextMenu {
+            if own != nil {
+                Button(role: .destructive) {
+                    store.clearSlotSignal(d.id, slot: key.slot)
+                } label: {
+                    Label("Remove Flipper key", systemImage: "trash")
+                }
+            }
         }
     }
 }

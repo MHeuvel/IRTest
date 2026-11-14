@@ -245,6 +245,41 @@ enum ProtocolTiming {
             for b in msb(a & 0xFF, 8) { lv += bit(b) }
             for b in msb(c & 0xFF, 8) { lv += bit(b) }
             return IRTiming(frequency: 36000, durations: durations(fromLevels: lv))
+        case "Kaseikyo":
+            // Flipper packs the 48-bit frame as: address = id << 24 | vendor << 8 | genre1 << 4 | genre2,
+            // command = 10 bits. Bytes: vendor lo, vendor hi, parity | genre1 << 4, genre2 | data lo << 4,
+            // data hi | id << 6, xor of the previous three.
+            let vendor = (a >> 8) & 0xFFFF
+            let genre1 = (a >> 4) & 0xF
+            let genre2 = a & 0xF
+            let id = (a >> 24) & 0x3
+            let data = c & 0x3FF
+            let parity = ((vendor >> 12) ^ (vendor >> 8) ^ (vendor >> 4) ^ vendor) & 0xF
+            let d2 = parity | (genre1 << 4)
+            let d3 = genre2 | ((data & 0xF) << 4)
+            let d4 = (data >> 4) | (id << 6)
+            let frame: [Int] = [vendor & 0xFF, (vendor >> 8) & 0xFF, d2, d3, d4, d2 ^ d3 ^ d4]
+            var d: [Int] = [3456, 1728]
+            for byte in frame {
+                for b in lsb(byte, 8) { d += [432, b == 1 ? 1296 : 432] }
+            }
+            d.append(432)
+            return IRTiming(frequency: 37000, durations: d)
+        case "RCA":
+            // 4-bit address, 8-bit command, then both inverted; most significant bit first
+            let addr = a & 0xF
+            let cmd = c & 0xFF
+            let bits = msb(addr, 4) + msb(cmd, 8) + msb((~addr) & 0xF, 4) + msb((~cmd) & 0xFF, 8)
+            var d: [Int] = [4000, 4000]
+            for b in bits { d += [500, b == 1 ? 2000 : 1000] }
+            d.append(500)
+            return IRTiming(frequency: 56000, durations: d)
+        case "Pioneer":
+            let bits = lsb(a & 0xFF, 8) + lsb((~a) & 0xFF, 8) + lsb(c & 0xFF, 8) + lsb((~c) & 0xFF, 8)
+            var d: [Int] = [8500, 4225]
+            for b in bits { d += [500, b == 1 ? 1500 : 500] }
+            d.append(500)
+            return IRTiming(frequency: 40000, durations: d)
         default:
             throw IRConvertError.unsupported(protocolName)
         }
@@ -259,9 +294,14 @@ struct FlipperKey: Identifiable {
     var fields: [String: String] = [:]
 
     var isParsed: Bool { (fields["type"] ?? "").lowercased() == "parsed" }
+    // A recording that is already converted to the chip signal (built-in database): hex in fields["hex"]
+    var isChipSignal: Bool { fields["type"] == "chip" }
     var protocolName: String { fields["protocol"] ?? "" }
 
     var summary: String {
+        if isChipSignal {
+            return "recording · \((fields["hex"] ?? "").count / 2) bytes"
+        }
         if isParsed {
             let a = (fields["address"] ?? "").trimmingCharacters(in: .whitespaces)
             let c = (fields["command"] ?? "").trimmingCharacters(in: .whitespaces)
@@ -302,6 +342,22 @@ enum FlipperIR {
     }
 
     static func convert(_ key: FlipperKey) throws -> [UInt8] {
+        if key.isChipSignal {
+            let hex = Array(key.fields["hex"] ?? "")
+            var out: [UInt8] = []
+            var i = 0
+            while i + 1 < hex.count {
+                guard let b = UInt8(String(hex[i]) + String(hex[i + 1]), radix: 16) else {
+                    throw IRConvertError.invalid("Invalid recording")
+                }
+                out.append(b)
+                i += 2
+            }
+            guard out.count >= 7, out[0] == 0, out[1] == 0, Int(out[2]) == out.count - 3 else {
+                throw IRConvertError.invalid("Invalid recording")
+            }
+            return out
+        }
         if key.isParsed {
             let address = bytes(key.fields["address"])
             let command = bytes(key.fields["command"])

@@ -79,7 +79,8 @@ extension Device {
 
     // Name on a button: the user's own name, else the name this code gives the key; nil = standard title or icon
     func shownName(_ key: RemoteKey, chip: Chip) -> String? {
-        customName(key.slot) ?? databaseName(key, chip: chip)
+        if slotSignals[String(key.slot)] != nil { return customName(key.slot) }
+        return customName(key.slot) ?? databaseName(key, chip: chip)
     }
 }
 
