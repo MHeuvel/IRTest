@@ -32,13 +32,11 @@ struct DeviceEditView: View {
                         flipperPagesSection(d)
                     }
                     if d.hasStandardPages {
-                        if !d.isLearnedRemote {
-                            powerSection(d)
-                        }
-                        powerButtonsSection(d)
+                        powerSection(d)
+                        groupSection(d)
+                        numbersSection(d)
                         blockSection(d)
                         extraSection(d)
-                        groupSection(d)
                         mediaSection(d)
                         flipperKeysSection(d)
                         Section {
@@ -90,21 +88,41 @@ struct DeviceEditView: View {
     // MARK: - Sections
 
     private func powerSection(_ d: Device) -> some View {
-        Section(header: Text("Power key"),
-                footer: Text("Some devices only react when the Power key is held. Off sends Power once, as usual. Otherwise the Power key is transmitted for this long.")) {
-            Stepper(value: Binding(get: { d.powerHoldMs },
-                                   set: { store.setPowerHold(d.id, ms: $0) }),
-                    in: 0...5000, step: 250) {
-                Text(d.powerHoldMs == 0 ? "Hold Power: off" : "Hold Power: \(d.powerHoldMs) ms")
+        Section(header: Text("Power options"),
+                footer: Text(d.isLearnedRemote ? "" : "Hold power: some devices only react when the Power key is held. Off sends Power once, as usual. Otherwise the Power key is transmitted for this long.")) {
+            shownToggle(d, K.power, "Power")
+            shownToggle(d, K.powerOn, "Power On")
+            shownToggle(d, K.powerOff, "Power Off")
+            if !d.isLearnedRemote {
+                Stepper(value: Binding(get: { d.powerHoldMs },
+                                       set: { store.setPowerHold(d.id, ms: $0) }),
+                        in: 0...5000, step: 250) {
+                    Text(d.powerHoldMs == 0 ? "Hold power: off" : "Hold power: \(d.powerHoldMs) ms")
+                }
             }
         }
     }
 
-    private func powerButtonsSection(_ d: Device) -> some View {
-        Section(header: Text("Power buttons")) {
-            keyRow(d, K.power, extra: false)
-            keyRow(d, K.powerOn, extra: false)
-            keyRow(d, K.powerOff, extra: false)
+    private func shownToggle(_ d: Device, _ key: RemoteKey, _ title: String) -> some View {
+        Toggle(title, isOn: Binding(
+            get: { d.keyConfig.shows(key) },
+            set: { store.setKey(d.id, key: key, shown: $0, extra: false) }
+        ))
+    }
+
+    private func numbersSection(_ d: Device) -> some View {
+        Section(header: Text("Number keys")) {
+            Toggle(isOn: Binding(
+                get: { d.keyConfig.shows(.digits) },
+                set: { store.setGroup(d.id, group: .digits, shown: $0) }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Show page")
+                    Text(KeyGroup.digits.subtitle(d.layout))
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+            }
         }
     }
 
@@ -131,10 +149,17 @@ struct DeviceEditView: View {
         let layout = d.layout
         return Section(header: Text("Groups")) {
             ForEach(KeyGroup.groups(for: layout)) { group in
-                Toggle(group.title(layout), isOn: Binding(
+                Toggle(isOn: Binding(
                     get: { d.keyConfig.shows(group) },
                     set: { store.setGroup(d.id, group: group, shown: $0) }
-                ))
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(group.title(layout))
+                        Text(group.subtitle(layout))
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
         }
     }

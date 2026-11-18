@@ -343,7 +343,7 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.14")
+                Text("UnityIRedux 0.15")
                     .foregroundColor(.secondary)
             }
         }

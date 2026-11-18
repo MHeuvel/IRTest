@@ -10,11 +10,22 @@ enum KeyGroup: String, CaseIterable, Identifiable {
 
     func title(_ layout: LayoutKind) -> String {
         switch self {
-        case .volume: return "Volume (VOL + and -)"
-        case .channel: return layout == .audio ? "Tune (+ and -)" : "Channel (CH + and -)"
-        case .arrows: return "Arrow pad (arrows and OK)"
-        case .digits: return "Number keys (0 to 9 and Enter)"
-        case .colors: return "Color keys (red, green, yellow, blue)"
+        case .volume: return "Volume"
+        case .channel: return layout == .audio ? "Tune" : "Channel"
+        case .arrows: return "Arrow pad"
+        case .digits: return "Number keys"
+        case .colors: return "Color keys"
+        }
+    }
+
+    // Small text under the title
+    func subtitle(_ layout: LayoutKind) -> String {
+        switch self {
+        case .volume: return "VOL + and -"
+        case .channel: return layout == .audio ? "Tune + and -" : "CH + and -"
+        case .arrows: return "Arrow keys and OK"
+        case .digits: return "0 to 9 and Enter"
+        case .colors: return "red, green, yellow, blue"
         }
     }
 
@@ -28,12 +39,12 @@ enum KeyGroup: String, CaseIterable, Identifiable {
         }
     }
 
-    // Groups that appear on the pages of a layout
+    // Groups on the remote page of a layout (the number keys have their own switch: the Numbers page)
     static func groups(for layout: LayoutKind) -> [KeyGroup] {
         switch layout {
-        case .tv: return [.volume, .channel, .arrows, .digits, .colors]
-        case .audio: return [.volume, .channel, .arrows, .digits]
-        case .disc: return [.arrows, .digits, .colors]
+        case .tv: return [.volume, .channel, .arrows, .colors]
+        case .audio: return [.volume, .channel, .arrows]
+        case .disc: return [.arrows, .colors]
         case .learned: return []
         }
     }
@@ -113,13 +124,11 @@ struct KeyConfig: Equatable {
             switch layout {
             case .tv: return !(shows(.volume) || shows(.channel) || shows(.colors))
             case .audio: return !(shows(.volume) || shows(.channel))
-            case .disc, .learned: return true
+            case .disc: return !shows(.colors)
+            case .learned: return true
             }
         case .numbers:
-            if shows(.digits) { return false }
-            let corner: RemoteKey = layout == .disc ? K.eject : (layout == .audio ? K.input : K.last)
-            if shows(corner) { return false }
-            return !((layout == .tv || layout == .disc) && shows(.colors))
+            return !shows(.digits)
         case .media:
             return MediaPage.keys(layout).allSatisfy { !shows($0) }
         }

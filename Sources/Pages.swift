@@ -132,14 +132,6 @@ struct NumbersPage: View {
     let config: KeyConfig
     let press: (RemoteKey) -> Void
 
-    private var corner: (key: RemoteKey, icon: String) {
-        switch layout {
-        case .tv, .learned: return (key: K.last, icon: "arrow.uturn.backward")
-        case .disc: return (key: K.eject, icon: "eject.fill")
-        case .audio: return (key: K.input, icon: "rectangle.portrait.and.arrow.right")
-        }
-    }
-
     var body: some View {
         VStack(spacing: 10) {
             if config.shows(.digits) {
@@ -151,12 +143,8 @@ struct NumbersPage: View {
                         }
                     }
                 }
-            }
-            HStack(spacing: 10) {
-                if config.shows(corner.key) {
-                    CellKey(key: corner.key, icon: corner.icon, press: press)
-                }
-                if config.shows(.digits) {
+                HStack(spacing: 10) {
+                    Color.clear.frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66)
                     CellKey(key: K.zero, text: "0", press: press)
                     if layout == .disc {
                         CellKey(key: K.plus10, text: "+10", press: press)
@@ -266,7 +254,7 @@ struct PageView: View {
 
     private var showsColors: Bool {
         switch (layout, page) {
-        case (.tv, .remote), (.tv, .numbers), (.disc, .numbers): return true
+        case (.tv, .remote), (.disc, .remote): return true
         default: return false
         }
     }
