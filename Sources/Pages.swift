@@ -132,6 +132,15 @@ struct NumbersPage: View {
     let config: KeyConfig
     let press: (RemoteKey) -> Void
 
+    // Bottom left: Exit on a TV, Eject on a disc player, empty on audio; hidden when its key is hidden
+    private var corner: (key: RemoteKey, icon: String)? {
+        switch layout {
+        case .tv: return (key: K.exit, icon: "xmark")
+        case .disc: return (key: K.eject, icon: "eject.fill")
+        case .audio, .learned: return nil
+        }
+    }
+
     var body: some View {
         VStack(spacing: 10) {
             if config.shows(.digits) {
@@ -144,7 +153,11 @@ struct NumbersPage: View {
                     }
                 }
                 HStack(spacing: 10) {
-                    Color.clear.frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66)
+                    if let c = corner, config.shows(c.key) {
+                        CellKey(key: c.key, icon: c.icon, press: press)
+                    } else {
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66)
+                    }
                     CellKey(key: K.zero, text: "0", press: press)
                     if layout == .disc {
                         CellKey(key: K.plus10, text: "+10", press: press)

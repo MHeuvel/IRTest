@@ -112,17 +112,10 @@ struct DeviceEditView: View {
 
     private func numbersSection(_ d: Device) -> some View {
         Section(header: Text("Number keys")) {
-            Toggle(isOn: Binding(
+            Toggle("Show page", isOn: Binding(
                 get: { d.keyConfig.shows(.digits) },
                 set: { store.setGroup(d.id, group: .digits, shown: $0) }
-            )) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Show page")
-                    Text(KeyGroup.digits.subtitle(d.layout))
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                }
-            }
+            ))
         }
     }
 
@@ -221,9 +214,7 @@ struct DeviceEditView: View {
             notes.append("Flipper key: \(own.name)")
         }
         if custom != nil {
-            notes.append("Your name · code: \(db ?? "no name") · standard: \(standard)")
-        } else if own == nil, let db = db, db.lowercased() != standard.lowercased() {
-            notes.append("Standard name: \(standard)")
+            if let db = db { notes.append("Code: \(db)") }
         } else if own == nil, db == nil, hasList, onChip {
             notes.append("This code gives it no name")
         }
@@ -236,7 +227,7 @@ struct DeviceEditView: View {
                         .foregroundColor(.secondary)
                 }
                 if own == nil && (hasCode ? !onChip : true) {
-                    Text(hasCode ? "Not available on \(remote.chip.title)" : "No signal assigned")
+                    Text(hasCode ? "Not available" : "No signal assigned")
                         .font(.system(size: 12))
                         .foregroundColor(.orange)
                 }
@@ -249,11 +240,17 @@ struct DeviceEditView: View {
                 Image(systemName: "pencil")
             }
             .buttonStyle(.borderless)
-            Button("Test") {
+            Button {
                 remote.send(key, device: d)
+            } label: {
+                Image(systemName: "dot.radiowaves.left.and.right")
+                    .font(.system(size: 17))
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
             .disabled(remote.status != .connected)
+            .accessibilityLabel("Test")
             Toggle("", isOn: Binding(
                 get: { on },
                 set: { store.setKey(d.id, key: key, shown: $0, extra: extra) }

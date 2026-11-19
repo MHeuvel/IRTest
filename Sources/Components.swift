@@ -147,7 +147,7 @@ struct CellKey: View {
                     Image(systemName: icon).font(.system(size: 24, weight: .semibold))
                 }
             }
-            .foregroundColor(tint)
+            .foregroundColor(ownName != nil ? Color.white : tint)
             .frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66)
             .background(RoundedRectangle(cornerRadius: 18).fill(Theme.surface))
             .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.stroke, lineWidth: 1))

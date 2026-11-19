@@ -134,7 +134,7 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         return message
     }
 
-    // "Pair / connect": use a unit iOS already knows; only show the system picker when none is found.
+    // "Connect": use a unit iOS already knows; only show the system picker when none is found.
     // Returns a short message for the caller to display.
     @discardableResult
     func pairOrConnect() -> String {

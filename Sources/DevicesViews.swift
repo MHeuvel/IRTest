@@ -312,10 +312,10 @@ struct SettingsView: View {
                 }
             }
             Section(header: Text("Connection"),
-                    footer: Text("Use Pair / connect to set up a new UnityRemote. The iOS list only shows units that are not yet paired with this phone, so it stays empty for a unit you have already set up. If such a unit does not connect, connect it in iOS Settings > Bluetooth.")) {
+                    footer: Text("Use Connect to set up a new UnityRemote. The iOS list only shows units that are not yet paired with this phone, so it stays empty for a unit you have already set up. If such a unit does not connect, connect it in iOS Settings > Bluetooth.")) {
                 LabeledContent("Status", value: statusText)
                 Button("Reconnect") { remote.reconnect() }
-                Button("Pair / connect UnityRemote") { remote.pairOrConnect() }
+                Button("Connect UnityRemote") { remote.pairOrConnect() }
                     .disabled(remote.status == .connected)
             }
             Section(header: Text("Backup"),
@@ -343,7 +343,7 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
-                Text("UnityIRedux 0.15")
+                Text("UnityIRedux 1.0")
                     .foregroundColor(.secondary)
             }
         }

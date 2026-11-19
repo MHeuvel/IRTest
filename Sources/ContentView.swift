@@ -241,14 +241,14 @@ struct PairBanner: View {
                 Text("No UnityRemote found")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
-                Text("New device? Tap Pair / connect.")
+                Text("New device? Tap Connect.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .lineLimit(2)
             }
             Spacer()
             Button { remote.pairOrConnect() } label: {
-                Text("Pair / connect")
+                Text("Connect")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)

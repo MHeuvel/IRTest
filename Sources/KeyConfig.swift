@@ -25,7 +25,7 @@ enum KeyGroup: String, CaseIterable, Identifiable {
         case .channel: return layout == .audio ? "Tune + and -" : "CH + and -"
         case .arrows: return "Arrow keys and OK"
         case .digits: return "0 to 9 and Enter"
-        case .colors: return "red, green, yellow, blue"
+        case .colors: return "Red, Green, Yellow, Blue"
         }
     }
 
