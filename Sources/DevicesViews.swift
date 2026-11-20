@@ -312,11 +312,8 @@ struct SettingsView: View {
                 }
             }
             Section(header: Text("Connection"),
-                    footer: Text("Use Connect to set up a new UnityRemote. The iOS list only shows units that are not yet paired with this phone, so it stays empty for a unit you have already set up. If such a unit does not connect, connect it in iOS Settings > Bluetooth.")) {
+                    footer: Text("The app connects by itself as soon as iOS has the UnityRemote connected. Connect it in iOS Settings > Bluetooth. A unit is connected to one phone or iPad at a time: turn Bluetooth off on the other one if it does not show up.")) {
                 LabeledContent("Status", value: statusText)
-                Button("Reconnect") { remote.reconnect() }
-                Button("Connect UnityRemote") { remote.pairOrConnect() }
-                    .disabled(remote.status == .connected)
             }
             Section(header: Text("Backup"),
                     footer: Text("A backup file contains your devices and learned keys. Keep it somewhere safe: reinstalling the app removes them.")) {

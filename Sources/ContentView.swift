@@ -241,7 +241,7 @@ struct PairBanner: View {
                 Text("No UnityRemote found")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
-                Text("New device? Tap Connect.")
+                Text("Connect the UnityRemote in iOS Settings > Bluetooth, or tap Connect.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .lineLimit(2)

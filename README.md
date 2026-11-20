@@ -5,8 +5,8 @@ An iOS app (SwiftUI, iOS 16 and later, English interface) that controls the **Ge
 Supported unit types: Axum II, Gondar I and Gondar II. The app was developed and tested on a **Gondar II** only (firmware 0.25.0, hardware 1.3.2); the other two follow the same tables from the original app but are untested.
 
 ## Quick start
-1. Install the IPA (see "Building"). Open the app. If no unit is connected a banner shows "No UnityRemote found. New device? Tap Connect."
-2. **New unit:** tap Connect and pick the UnityRemote in the iOS list. **Unit that was set up before:** just wait; the app connects by itself. The list in the iOS picker only shows units that are not yet paired with this phone, so it is empty for a unit you already set up. If such a unit does not connect, connect it in iOS Settings > Bluetooth. The unit connects automatically only to the phone it was used with last.
+1. Install the IPA (see "Building"). Open the app. If no unit is connected a banner shows "No UnityRemote found. Connect the UnityRemote in iOS Settings > Bluetooth, or tap Connect."
+2. **Connect the unit in iOS Settings > Bluetooth.** The app sees it at once and opens its connection by itself (it also checks when the app comes to the foreground and every 2 seconds). A unit is connected to one phone or iPad at a time and reconnects by itself to the one it was used with last: if it does not show up, turn Bluetooth off on the other device. The Connect button in the banner opens the iOS picker for a new unit (it lists units in pairing mode that are not connected to another device); if nothing is connected afterwards a message says so.
 3. Tap the device name at the top to choose a device; the gear opens the device list (add a device with type, brand and code, edit, delete) and Settings. Press Power, VOL, CH ...
 
 ## Devices
@@ -35,7 +35,7 @@ Swipe a device > Edit.
 - **Buttons block**, **More buttons** (other keys the Gear4 knows, off by default, added to the block when on: Setup, Favorite, Wide, List, +100, PIP, HDMI and so on) and **Media page** keys: per key a switch, the name, a pencil and a signal icon.
   - The signal icon sends the key (Test); use it to find out what a key does for this device and switch off what does nothing.
   - The pencil gives the button **your own name** on this device ("Use name from code" removes it).
-  - Notes under a key: "Code: <name>" (name from the code when you gave your own), "This code gives it no name" (usually does nothing), "Not available" (this chip has no key for it), "No signal assigned" (learned remote), "Flipper key: <name>".
+  - Notes under a key: "Code: <name>" (name from the code when you gave your own), "Standard name: <name>" (only when the renamed button has the same name as another button, for example two buttons called Back), "This code gives it no name" (usually does nothing), "Not available" (this chip has no key for it), "No signal assigned" (learned remote), "Flipper key: <name>".
 - **Flipper keys**: how many standard buttons send an imported signal; touch and hold a key row to remove one, or remove all.
 - **Back to standard buttons** restores all switches. For a learned remote: **Standard pages** (Custom only, TV, Audio, Disc player).
 - Hidden or added buttons are stored per device and are part of the backup. Existing devices show everything until you change something.
@@ -59,7 +59,7 @@ The unit has numbered keys and every code decides what a number means. On a Sams
 
 ## Settings
 - **UnityRemote unit > Chip**: Axum II, Gondar I or Gondar II (set per unit).
-- **Connection**: Reconnect, Connect UnityRemote. The app checks the connection every 2 seconds and when it comes to the foreground.
+- **Connection**: the status of the connection (the app connects by itself; see Quick start).
 - **Backup**: Save as file (JSON) and Restore from file (replaces everything after confirmation). Includes devices, learned keys, hidden and added buttons, own names, Flipper keys and Hold power.
 - **Log**: the traffic with the unit (Copy, Clear); useful for problems. **About**.
 

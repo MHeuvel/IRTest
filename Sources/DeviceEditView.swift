@@ -199,6 +199,24 @@ struct DeviceEditView: View {
 
     // MARK: - One key: name, whether the chip has it, Test and a switch
 
+    // How often each name (lowercase) is on a visible button of this device
+    private func shownNameCounts(_ d: Device) -> [String: Int] {
+        let layout = d.layout
+        let cfg = d.keyConfig
+        var seen = Set<RemoteKey>()
+        var counts: [String: Int] = [:]
+        for k in layout.defaultBlock + layout.extraKeys + MediaPage.keys(layout) where !seen.contains(k) {
+            seen.insert(k)
+            let isExtra = layout.extraKeys.contains(k)
+            let on = isExtra ? (cfg.extras.contains(k.slot) && cfg.shows(k)) : cfg.shows(k)
+            guard on else { continue }
+            let own = d.slotSignals[String(k.slot)]
+            let name = d.customName(k.slot) ?? (own == nil ? d.databaseName(k, chip: remote.chip) : nil) ?? k.title
+            counts[name.lowercased(), default: 0] += 1
+        }
+        return counts
+    }
+
     private func keyRow(_ d: Device, _ key: RemoteKey, extra: Bool, label: String? = nil) -> some View {
         let cfg = d.keyConfig
         let on = extra ? (cfg.extras.contains(key.slot) && cfg.shows(key)) : cfg.shows(key)
@@ -217,6 +235,12 @@ struct DeviceEditView: View {
             if let db = db { notes.append("Code: \(db)") }
         } else if own == nil, db == nil, hasList, onChip {
             notes.append("This code gives it no name")
+        }
+        // A renamed button whose name occurs twice: say what the button is normally called
+        let shownName = custom ?? (own == nil ? db : nil) ?? standard
+        if shownName.lowercased() != standard.lowercased(),
+           (shownNameCounts(d)[shownName.lowercased()] ?? 0) > 1 {
+            notes.append("Standard name: \(standard)")
         }
         return HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {

@@ -191,11 +191,17 @@ struct FlipperImportView: View {
                                 }
                                 Spacer()
                                 if let signal = row.signal {
-                                    Button("Test") {
+                                    Button {
                                         remote.sendLearned(signal, label: "Flipper \(row.key.name)")
+                                    } label: {
+                                        Image(systemName: "dot.radiowaves.left.and.right")
+                                            .font(.system(size: 17))
+                                            .frame(width: 36, height: 36)
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.borderless)
                                     .disabled(remote.status != .connected)
+                                    .accessibilityLabel("Test")
                                 }
                             }
                         }

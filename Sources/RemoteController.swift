@@ -125,15 +125,6 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         }
     }
 
-    @discardableResult
-    func reconnect() -> String {
-        closeSession()
-        refresh(autoOpen: true)
-        let message = "Reconnecting…"
-        showNotice(message)
-        return message
-    }
-
     // "Connect": use a unit iOS already knows; only show the system picker when none is found.
     // Returns a short message for the caller to display.
     @discardableResult
@@ -158,6 +149,11 @@ final class RemoteController: NSObject, ObservableObject, StreamDelegate {
         EAAccessoryManager.shared().showBluetoothAccessoryPicker(withNameFilter: nil) { error in
             self.addLog(error.map { "Picker: error \($0.localizedDescription)" } ?? "Picker: done")
             self.refresh(autoOpen: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                if self.status == .noAccessory {
+                    self.showNotice("Not connected in iOS. Connect it in Settings > Bluetooth, or turn Bluetooth off on the phone or iPad that used it last.")
+                }
+            }
         }
     }
 
